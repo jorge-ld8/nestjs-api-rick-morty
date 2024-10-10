@@ -2,10 +2,15 @@ import { PrismaClient } from '@prisma/client';
 import axios from 'axios';
 import { categories, statusTypes } from './data';
 import { Character as CharacterAPI, Episode as EpisodeAPI} from 'rickmortyapi';
+import { clearScreenDown } from 'readline';
 
 const prisma : PrismaClient = new PrismaClient()
 
 async function deleteAllDbRecords(){
+    await prisma.character.deleteMany({});
+    await prisma.$executeRaw`ALTER SEQUENCE "characters_character_id_seq" RESTART WITH 1`;
+    await prisma.episode.deleteMany({});
+    await prisma.$executeRaw`ALTER SEQUENCE "episodes_episode_id_seq" RESTART WITH 1`;
     await prisma.status.deleteMany({});
     await prisma.$executeRaw`ALTER SEQUENCE "status_status_id_seq" RESTART WITH 1`;
     await prisma.status_Type.deleteMany({});
@@ -13,8 +18,6 @@ async function deleteAllDbRecords(){
     await prisma.subcategory.deleteMany({});
     await prisma.$executeRaw`ALTER SEQUENCE "subcategories_subcategory_id_seq" RESTART WITH 1`;
     await prisma.category.deleteMany({});
-    await prisma.$executeRaw`ALTER SEQUENCE "categories_category_id_seq" RESTART WITH 1`;
-    await prisma.character.deleteMany({});
     await prisma.$executeRaw`ALTER SEQUENCE "categories_category_id_seq" RESTART WITH 1`;
 }
 
@@ -138,11 +141,28 @@ async function seed() {
                     name: character.name,
                     type: character.type,
                     status_id: curr_statuses.find((status) => status.value==character.status)?.status_id ?? 1,
-                    specie_id: curr_subcategories.find((subcategory) => subcategory.name==character.species)?.subcategory_id ?? 1,
+                    specie_id: curr_subcategories.find((specie) => specie.name==character.species)?.subcategory_id ?? 1,
                 }
             )) 
         }
     );
+
+    // seed db episodes
+    const curr_episodes = await prisma.episode.createManyAndReturn(
+        {
+            data: episodes.map((episode) => (
+                {
+                    name: episode.name,
+                    length: 55,
+                    airDate: new Date(episode.air_date),
+                    status_id: curr_statuses.find((status) => status.value=='Active')?.status_id ?? 1,
+                    episode_code: episode.episode,
+                    season_id: curr_subcategories.find((season) => season.name.substring(season.name.length-2)===episode.episode.substring(1,3))?.subcategory_id ?? 1
+                }
+            ))
+        }
+    );
+    console.log(curr_episodes.length);
 
     console.log('Information seeded successfully.');
     
@@ -152,5 +172,15 @@ async function seed() {
     await prisma.$disconnect();
   }
 }
+
+// name         String      @db.VarChar(200)
+// length       Int
+// airDate      DateTime
+// status_id    Int
+// season_id    Int
+// episode_code String      @db.VarChar(100)
+// episode_id   Int         @id @default(autoincrement())
+// Season       Subcategory @relation(fields: [season_id], references: [subcategory_id])
+// Status       Status      @relation(fields: [status_id], references: [status_id])
 
 seed();

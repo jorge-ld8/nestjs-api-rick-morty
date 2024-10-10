@@ -148,7 +148,7 @@ async function seed() {
     );
 
     // seed db episodes
-    const curr_episodes = await prisma.episode.createManyAndReturn(
+    await prisma.episode.createMany(
         {
             data: episodes.map((episode) => (
                 {
@@ -162,8 +162,6 @@ async function seed() {
             ))
         }
     );
-    console.log(curr_episodes.length);
-
     console.log('Information seeded successfully.');
     
   } catch (error) {
@@ -172,15 +170,5 @@ async function seed() {
     await prisma.$disconnect();
   }
 }
-
-// name         String      @db.VarChar(200)
-// length       Int
-// airDate      DateTime
-// status_id    Int
-// season_id    Int
-// episode_code String      @db.VarChar(100)
-// episode_id   Int         @id @default(autoincrement())
-// Season       Subcategory @relation(fields: [season_id], references: [subcategory_id])
-// Status       Status      @relation(fields: [status_id], references: [status_id])
 
 seed();

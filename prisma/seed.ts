@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import axios from 'axios';
-import { categories, statusTypes, statuses, subcategories } from './data';
+import { categories, statusTypes } from './data';
+import { Character as CharacterAPI, Episode as EpisodeAPI} from 'rickmortyapi';
 
 const prisma : PrismaClient = new PrismaClient()
 
@@ -12,8 +13,37 @@ async function deleteAllDbRecords(){
     await prisma.subcategory.deleteMany({});
     await prisma.$executeRaw`ALTER SEQUENCE "subcategories_subcategory_id_seq" RESTART WITH 1`;
     await prisma.category.deleteMany({});
-    await prisma.$executeRaw`ALTER SEQUENCE "categories_category_id_seq" RESTART WITH 1`
+    await prisma.$executeRaw`ALTER SEQUENCE "categories_category_id_seq" RESTART WITH 1`;
+    await prisma.character.deleteMany({});
+    await prisma.$executeRaw`ALTER SEQUENCE "categories_category_id_seq" RESTART WITH 1`;
 }
+
+async function fetchAllCharacters(baseUrl: string) : Promise<CharacterAPI[]>{
+    const firstResponse = await axios.get(baseUrl);
+    const totalPages : number = firstResponse.data.info.pages;
+    let page_num = 1
+    let characters: CharacterAPI[] = [];
+    do{
+        const response = await axios.get(`${baseUrl}?page=${page_num}`);
+        characters = characters.concat(response.data.results);
+    }while(++page_num <= totalPages)
+
+    return characters;
+}
+
+async function fetchAllEpisodes(baseUrl: string) : Promise<EpisodeAPI[]>{
+    const firstResponse = await axios.get(baseUrl);
+    const totalPages : number = firstResponse.data.info.pages;
+    let page_num = 1
+    let episodes: EpisodeAPI[] = [];
+    do{
+        const response = await axios.get(`${baseUrl}?page=${page_num}`);
+        episodes = episodes.concat(response.data.results);
+    }while(++page_num <= totalPages)
+
+    return episodes;
+}
+
 
 async function seed() {
   try {
@@ -23,45 +53,97 @@ async function seed() {
         {
             data: categories
         }
-    ); 
+    );
 
     // category 'Season' Id and category 'Specie' Id
-    const categorySeason= await prisma.category.findFirstOrThrow({ where: {name: "Season"}});
-    const categorySeasonId = categorySeason.category_id;
-    const categorySpecie = await prisma.category.findFirstOrThrow({ where: {name: "Species"}});
-    const categorySpecieId = categorySpecie.category_id;
+    const categorySeasonId= (await prisma.category.findFirstOrThrow({ where: {name: "Season"}})).category_id;
+    const categorySpecieId = (await prisma.category.findFirstOrThrow({ where: {name: "Species"}})).category_id;
 
-    const subcats = subcategories.map((subcategory) => { 
-        let id = subcategory.category === "Season" ? categorySeasonId : categorySpecieId
-        return {category_id: id, name:subcategory.name};
-    });
+    // fetch all characters and episodes from the db 
+    const characters = await fetchAllCharacters('https://rickandmortyapi.com/api/character/');
+    const episodes = await fetchAllEpisodes('https://rickandmortyapi.com/api/episode/')
 
-    await prisma.subcategory.createMany(
+    // get all diferent species
+    const distinctSpecies = [...new Set(characters.map(character => character.species))];
+   
+    let subcategories = distinctSpecies.map((specie)=>(
+        {
+            name: specie,
+            category_id: categorySpecieId
+        }
+    ));
+
+    // get all different seasons
+    const distinctSeasons = [...new Set(episodes.map(episode => episode.episode.substring(1,3)))];
+
+    subcategories = subcategories.concat(
+        distinctSeasons.map((season) => (
+            {
+               name: "Season " + season,
+               category_id: categorySeasonId
+            }
+        )
+        )
+    )
+
+    const curr_subcategories = await prisma.subcategory.createManyAndReturn(
         {  
-            data: subcats
+            data: subcategories
         }
     );
 
+    // seed status types 
     await prisma.status_Type.createMany(
         {
             data: statusTypes
         }
     );
 
+    // get all different status
+    const distinctStatus : string[] = [...new Set(characters.map(character => character.status))];
+    const episodeStatuses = ['Cancelled', 'Active'];
+
     // category 'Season' Id and category 'Specie' Id
     const statusTypeCharacterId = (await prisma.status_Type.findFirstOrThrow({ where: {value: "Character"}})).status_type_id;
     const statusTypeEpisodeId = (await prisma.status_Type.findFirstOrThrow({ where: {value: "Episode"}})).status_type_id;
 
-    const statusList = statuses.map((status) => { 
-        let id = status.status_type === "Character" ? statusTypeCharacterId : statusTypeEpisodeId
-        return {status_type_id: id, value: status.value};
-    });    
+    let statusList = distinctStatus.map((status)=>(
+        {
+            status_type_id: statusTypeCharacterId,
+            value: status
+        }
+    ));
 
-    await prisma.status.createMany(
+    statusList = statusList.concat(
+        episodeStatuses.map((status)=>(
+            {
+                status_type_id: statusTypeEpisodeId,
+                value: status,
+            }
+        )
+    )
+    );
+
+    const curr_statuses = await prisma.status.createManyAndReturn(
         {
             data: statusList
         }
     );
+
+    // seed db characters
+    await prisma.character.createMany(
+        {
+            data: characters.map((character) => (
+                {
+                    name: character.name,
+                    type: character.type,
+                    status_id: curr_statuses.find((status) => status.value==character.status)?.status_id ?? 1,
+                    specie_id: curr_subcategories.find((subcategory) => subcategory.name==character.species)?.subcategory_id ?? 1,
+                }
+            )) 
+        }
+    );
+
     console.log('Information seeded successfully.');
     
   } catch (error) {

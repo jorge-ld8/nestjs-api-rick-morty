@@ -1,6 +1,5 @@
 import { PrismaClient } from '@prisma/client';
 import axios from 'axios';
-import { categories, statusTypes } from './data';
 import { Character as CharacterAPI, Episode as EpisodeAPI} from 'rickmortyapi';
 import { clearScreenDown } from 'readline';
 
@@ -52,6 +51,11 @@ async function seed() {
   try {
     await deleteAllDbRecords();
 
+    const categories = [
+        {name: "Season"},
+        {name: "Species"}
+    ]
+    
     await prisma.category.createMany(
         {
             data: categories
@@ -94,6 +98,11 @@ async function seed() {
             data: subcategories
         }
     );
+
+    const statusTypes = [
+        {value: "Character"},
+        {value: "Episode"}
+    ]
 
     // seed status types 
     await prisma.status_Type.createMany(
@@ -162,7 +171,7 @@ async function seed() {
             ))
         }
     );
-    console.log('Information seeded successfully.');
+    console.log('Info seeded successfully.');
     
   } catch (error) {
     console.error('Error seeding data:', error);

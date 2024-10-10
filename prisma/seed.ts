@@ -1,7 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import axios from 'axios';
 import { Character as CharacterAPI, Episode as EpisodeAPI} from 'rickmortyapi';
-import { clearScreenDown } from 'readline';
 
 const prisma : PrismaClient = new PrismaClient()
 
@@ -103,7 +102,7 @@ async function seed() {
         {value: "Character"},
         {value: "Episode"}
     ]
-
+    
     // seed status types 
     await prisma.status_Type.createMany(
         {

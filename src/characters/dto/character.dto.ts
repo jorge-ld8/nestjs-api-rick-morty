@@ -13,5 +13,5 @@ export class CharacterDto {
   species: string;
 
   @IsString()
-  type?: string;
+  type: string;
 }

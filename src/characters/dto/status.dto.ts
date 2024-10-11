@@ -1,4 +1,4 @@
-export class StatusDTO{
+export class StatusDTO {
     id: number;
     value: string
 }

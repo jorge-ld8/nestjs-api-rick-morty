@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch } from '@nestjs/common';
+import { Body, Controller, Delete, Get, NotFoundException, Param, ParseIntPipe, Patch } from '@nestjs/common';
 import { CharactersService } from './characters.service';
 import { Character } from '@prisma/client';
 import { UpdateCharacterDto } from './dto/update-character.dto';
@@ -32,7 +32,12 @@ export class CharactersController {
     async cancelCharacter(
         @Param('id', ParseIntPipe) id: number
     ): Promise<Character> {
-        return await this.charactersService.cancelCharacter(id);
+        try{
+            return await this.charactersService.cancelCharacter(id);
+        }
+        catch (error){
+            console.log(error); 
+        }
     }
 
 }

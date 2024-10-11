@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Character } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UpdateCharacterDto } from './dto/update-character.dto';
@@ -33,10 +33,30 @@ export class CharactersService {
     }
 
     async cancelCharacter(id: number): Promise<Character>{
-        return await this.prisma.character.delete({
-            where: {
-                character_id: id
+        try {
+            const statusTypeCharacterId = (await this.prisma.status_Type.findFirst({where: {value: "Character"}})).status_type_id;
+
+            if (!statusTypeCharacterId){
+                throw new BadRequestException('Status Character Cancelled not found');
             }
-        });
+            
+            const character = await this.prisma.character.update({
+                where: {
+                    character_id: id
+                },
+                data:{
+                    status_id : (await this.prisma.status.findFirst({where: {AND: [{value: "Cancelled"}, {status_type_id: statusTypeCharacterId}]}})).status_id
+                }
+            })
+
+            if (!character){
+                throw new NotFoundException(`Record with id: ${id} not found`);
+            }
+
+            return character;
+        }
+        catch(error){
+            throw error;
+        }
     }
 }

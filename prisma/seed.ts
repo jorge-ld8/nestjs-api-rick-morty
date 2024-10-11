@@ -111,7 +111,8 @@ async function seed() {
     );
 
     // get all different status
-    const distinctStatus : string[] = [...new Set(characters.map(character => character.status))];
+    let distinctStatus : string[] = [...new Set(characters.map(character => character.status))];
+    distinctStatus.push("Cancelled");
     const episodeStatuses = ['Cancelled', 'Active'];
 
     // category 'Season' Id and category 'Specie' Id

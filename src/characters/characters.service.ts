@@ -274,5 +274,4 @@ export class CharactersService {
             species: character.Specie.name
         }
     }
-
 }

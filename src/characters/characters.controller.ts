@@ -3,12 +3,13 @@ import { CharactersService } from './characters.service';
 import { Character } from '@prisma/client';
 import { UpdateCharacterDto } from './dto/update-character.dto';
 import { CharacterDto } from './dto/character.dto';
-import { ApiQuery, ApiParam, ApiResponse, ApiBody} from '@nestjs/swagger'
+import { ApiQuery, ApiParam, ApiResponse, ApiBody, ApiTags} from '@nestjs/swagger'
 import { StandardResponseDto } from 'src/utils/response-dto';
 import { SpeciesDTO } from './dto/species.dto';
 import { StatusDTO } from './dto/status.dto';
 import { CreateCharacterDto } from './dto/create-character.dto';
 
+@ApiTags('Characters')
 @Controller('characters')
 export class CharactersController {
     constructor(private charactersService: CharactersService){}

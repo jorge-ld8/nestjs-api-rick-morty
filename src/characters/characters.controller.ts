@@ -44,7 +44,7 @@ export class CharactersController {
     async updateCharacter(
         @Param('id', ParseIntPipe) id: number, 
         @Body() character: UpdateCharacterDto                    
-    ): Promise<Character>{
+    ): Promise<CharacterDto>{
         return await this.charactersService.updateCharacter(id, character);
     }
 

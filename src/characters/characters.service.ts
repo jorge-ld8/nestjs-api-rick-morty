@@ -107,13 +107,54 @@ export class CharactersService {
         });
     }
 
-    async updateCharacter(id: number, character: UpdateCharacterDto): Promise<Character>{
-        return await this.prisma.character.update({
-            where:{
-                character_id: id
+    async updateCharacter(id: number, character: UpdateCharacterDto): Promise<CharacterDto>{
+        if (character.status_id){
+            const status = await this.prisma.status.findUnique({
+                where: {
+                        status_id: character.status_id,
+                        status_type: {
+                            value: "Character"
+                        }
+                },
+            });
+
+            if (!status) throw new BadRequestException('Status not found');
+        }
+
+        if (character.specie_id){
+            const species = await this.prisma.subcategory.findUnique({
+                where:{
+                        subcategory_id: character.specie_id,
+                        category: {
+                            name: "Species"
+                        }
+                }
+            });
+    
+            if (!species) throw new BadRequestException('Species not found');
+        }
+
+
+        let updated = await this.prisma.character.update({
+            where: {
+                character_id: id,
             },
-            data: {...character}
-        });
+            data: character,
+            include: {
+                Status: true,
+                Specie: true
+            }
+        })
+
+        if (!updated) throw new  BadRequestException(`Character with id: ${id} not found hence it couldn't be updated`);
+        
+        return {
+            id: updated.character_id,
+            name: updated.name,
+            status: updated.Status.value,
+            species: updated.Specie.name,
+            type: updated.type
+        };
     }
 
     async cancelCharacter(id: number): Promise<string>{

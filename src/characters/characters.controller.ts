@@ -5,10 +5,33 @@ import { UpdateCharacterDto } from './dto/update-character.dto';
 import { CharacterDto } from './dto/character.dto';
 import { ApiQuery, ApiParam, ApiResponse, ApiBody} from '@nestjs/swagger'
 import { StandardResponseDto } from 'src/utils/response-dto';
+import { SpeciesDTO } from './dto/species.dto';
+import { StatusDTO } from './dto/status.dto';
 
 @Controller('characters')
 export class CharactersController {
     constructor(private charactersService: CharactersService){}
+
+
+    @Get('species')
+    async getAllSpecies(): Promise<SpeciesDTO[]>{
+        try{
+            return await this.charactersService.getAllSpecies();
+        }
+        catch (error){
+            throw error;
+        }
+    }
+
+    @Get('status')
+    async getAllStatus(): Promise<StatusDTO[]>{
+        try{
+            return await this.charactersService.getAllStatus();
+        }
+        catch (error){
+            throw error;
+        }
+    }
 
     @Get()
     @ApiQuery({ name: 'page', required: false, description: 'Page number', type: Number})

@@ -3,6 +3,8 @@ import { Character } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UpdateCharacterDto } from './dto/update-character.dto';
 import { CharacterDto } from './dto/character.dto';
+import { SpeciesDTO } from './dto/species.dto';
+import { StatusDTO } from './dto/status.dto';
 
 @Injectable()
 export class CharactersService {
@@ -194,5 +196,51 @@ export class CharactersService {
         catch(error){
             throw error;
         }
+    }
+
+    async getAllSpecies(): Promise<SpeciesDTO[]>{
+        const speciesList =  await this.prisma.subcategory.findMany({
+            where:{
+                category: {
+                    name: "Species",
+                }
+            },
+            select:{
+                subcategory_id: true,
+                name: true
+            }
+        });
+
+        if (speciesList.length==0) throw new NotFoundException('Species not found.')
+
+        return speciesList.map((species)=>(
+            {
+                id: species.subcategory_id,
+                name: species.name
+            }
+        ));
+    }
+
+    async getAllStatus(): Promise<StatusDTO[]>{
+        const statusList = await this.prisma.status.findMany({
+            where:{
+                status_type: {
+                    value: "Character"
+                }
+            },
+            select:{
+                status_id: true,
+                value: true
+            }
+        });
+
+        if (statusList.length==0) throw new NotFoundException('Status not found.')
+
+        return statusList.map((status)=>(
+            {
+                id: status.status_id,
+                value: status.value
+            }
+        ));
     }
 }

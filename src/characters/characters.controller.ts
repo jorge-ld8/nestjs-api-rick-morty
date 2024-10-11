@@ -31,7 +31,7 @@ export class CharactersController {
     @Delete(':id')
     async cancelCharacter(
         @Param('id', ParseIntPipe) id: number
-    ): Promise<Character> {
+    ): Promise<string> {
         try{
             return await this.charactersService.cancelCharacter(id);
         }

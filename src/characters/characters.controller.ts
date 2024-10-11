@@ -69,7 +69,7 @@ export class CharactersController {
     @ApiQuery({ name: 'species', required: false, description: 'Character Species', type: String, example: "Human"})
     async getAllCharacters(
         @Query('page') page: number=1, 
-        @Query('type',) type?: string,
+        @Query('type') type?: string,
         @Query('species') species?: string,
     ): Promise<StandardResponseDto<CharacterDto>> {
         try{

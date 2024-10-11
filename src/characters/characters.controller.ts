@@ -25,11 +25,8 @@ export class CharactersController {
         try{
             return await this.charactersService.getAllCharacters(+page, type, species);
         }
-        catch(e){
-            if(e instanceof BadRequestException){
-                throw e;
-            }
-            console.log(e);
+        catch(error){
+            throw error;
         }
     }
 
@@ -40,8 +37,8 @@ export class CharactersController {
         try{
             return await this.charactersService.getCharacterById(id);
         }
-        catch(e){
-            throw e;
+        catch(error){
+            throw error;
         }
     }
 
@@ -61,7 +58,7 @@ export class CharactersController {
             return await this.charactersService.cancelCharacter(id);
         }
         catch (error){
-            console.log(error); 
+            throw error;
         }
     }
 }

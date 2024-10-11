@@ -77,6 +77,5 @@ model Status {
   characters     Character[]
   episodes       Episode[]
   status_type    Status_Type @relation(fields: [status_type_id], references: [status_type_id])
-
   @@map("status")
 }

@@ -31,7 +31,7 @@ export class CharactersService {
             ]
         },orderBy: {character_id: 'asc'}}));
 
-        if (!allCharacters){
+        if (allCharacters.length==0){
             return {
                 info:{
                     count: 0,
@@ -79,8 +79,8 @@ export class CharactersService {
                     info: {
                         count: totalCount,
                         pages: totalPages,
+                        prev: page > 1 ? `/characters?page=${page-1}${species ? "&species="+species:''}${type ? "&type="+type:''}` : null,
                         next: page < totalPages ? `/characters?page=${page+1}${species ? "&species="+species:''}${type ? "&type="+type:''}` : null,
-                        prev: page > 1 ? `/characters?page=${page-1}${species ? "&species="+species:''}${type ? "&type="+type:''}` : null
                     },
                     results: characters.map((character)=>(
                         {
@@ -107,7 +107,7 @@ export class CharactersService {
             }
         });
         
-        if (!character) throw new NotFoundException('Character not found')
+        if (!character) throw new NotFoundException('Character not found.')
 
         return {
             id: character.character_id,
@@ -186,7 +186,7 @@ export class CharactersService {
             })
 
             if (!character){
-                throw new NotFoundException(`Character not found`);
+                throw new NotFoundException(`Character not found.`);
             }
 
             return 'Character has been succesfully suspended';

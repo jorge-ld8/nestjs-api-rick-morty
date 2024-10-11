@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, NotFoundException, Param, ParseIntPipe, Patch } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, NotFoundException, Param, ParseIntPipe, Patch, Query } from '@nestjs/common';
 import { CharactersService } from './characters.service';
 import { Character } from '@prisma/client';
 import { UpdateCharacterDto } from './dto/update-character.dto';
@@ -9,8 +9,28 @@ export class CharactersController {
     constructor(private charactersService: CharactersService){}
 
     @Get()
-    async getAllCharacters(): Promise<Character[]> {
-        return await this.charactersService.getAllCharacters();
+    async getAllCharacters(
+        @Query('page') page: number=1, 
+        @Query('type') type?: string,
+        @Query('species') species?: string,
+    ): Promise<{
+        info: {
+            count: number,
+            pages: number,
+            next: string | null,
+            prev: string | null,
+        },
+        results: CharacterDto[]
+    }> {
+        try{
+            return await this.charactersService.getAllCharacters(+page, type, species);
+        }
+        catch(e){
+            if(e instanceof BadRequestException){
+                throw e;
+            }
+            console.log(e);
+        }
     }
 
     @Get(':id')
@@ -39,5 +59,4 @@ export class CharactersController {
             console.log(error); 
         }
     }
-
 }

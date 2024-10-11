@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, Get, NotFoundException, Param, ParseIntPipe, Patch, Query } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, NotFoundException, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
 import { CharactersService } from './characters.service';
 import { Character } from '@prisma/client';
 import { UpdateCharacterDto } from './dto/update-character.dto';
@@ -7,6 +7,7 @@ import { ApiQuery, ApiParam, ApiResponse, ApiBody} from '@nestjs/swagger'
 import { StandardResponseDto } from 'src/utils/response-dto';
 import { SpeciesDTO } from './dto/species.dto';
 import { StatusDTO } from './dto/status.dto';
+import { CreateCharacterDto } from './dto/create-character.dto';
 
 @Controller('characters')
 export class CharactersController {
@@ -27,6 +28,34 @@ export class CharactersController {
     async getAllStatus(): Promise<StatusDTO[]>{
         try{
             return await this.charactersService.getAllStatus();
+        }
+        catch (error){
+            throw error;
+        }
+    }
+    
+    @Post()
+    @ApiBody({ 
+        description: 'create character data', 
+        type: CreateCharacterDto,
+        examples: {
+            createCharacterExample: {
+                value: {
+                    name: "Jorge Leon",
+                    type: "",
+                    status_id: 1,
+                    specie_id: 1,
+                }
+            }
+        }
+    })
+    @ApiResponse({ status: 200, description: 'Character created successfully.', type: CharacterDto })
+    @ApiResponse({ status: 400, description: 'Character not created.' })
+    async createCharacter(
+        @Body() character: CreateCharacterDto
+    ): Promise<CharacterDto>{
+        try{
+            return await this.charactersService.createCharacter(character);
         }
         catch (error){
             throw error;

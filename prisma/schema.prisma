@@ -43,7 +43,7 @@ model Episode {
 model Character {
   character_id Int         @id @default(autoincrement())
   name         String      @db.VarChar(200)
-  type         String      @db.VarChar(100)
+  type         String?      @db.VarChar(100)
   status_id    Int
   specie_id    Int
   Specie       Subcategory @relation(fields: [specie_id], references: [subcategory_id])

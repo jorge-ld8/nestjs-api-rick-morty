@@ -1,17 +1,38 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { Character } from '@prisma/client';
+import { Character, Status, Subcategory } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UpdateCharacterDto } from './dto/update-character.dto';
 import { CharacterDto } from './dto/character.dto';
 import { SpeciesDTO } from './dto/species.dto';
 import { StatusDTO } from './dto/status.dto';
+import { CreateCharacterDto } from './dto/create-character.dto';
 
 @Injectable()
 export class CharactersService {
     constructor(private readonly prisma: PrismaService){}
 
-    async createCharacter(character: Character) : Promise<Character> {
-        return await this.prisma.character.create({data: character});
+    async createCharacter(data: CreateCharacterDto) : Promise<CharacterDto> {
+        const characterRepeated = data.type.length ?  await this.prisma.character.findFirst(
+            {
+                where: {
+                    type: data.type,
+                    Specie:{
+                        subcategory_id: data.specie_id
+                    },
+                    name: data.name
+                }
+            }
+        ) : null
+
+        if (characterRepeated) throw new BadRequestException('Character names with the same species and type cannot be repeated');
+
+        const character = await this.prisma.character.create(
+            {data, include: {
+                Specie: true,
+                Status: true
+            }},
+        );
+        return this.CharacterToDto(character);
     }
 
     async getAllCharacters(page:number, type?: string, species?: string) : Promise<{
@@ -84,14 +105,7 @@ export class CharactersService {
                         prev: page > 1 ? `/characters?page=${page-1}${species ? "&species="+species:''}${type ? "&type="+type:''}` : null,
                         next: page < totalPages ? `/characters?page=${page+1}${species ? "&species="+species:''}${type ? "&type="+type:''}` : null,
                     },
-                    results: characters.map((character)=>(
-                        {
-                            id: character.character_id, 
-                            name: character.name,
-                            status: character.Status.value,
-                            species: character.Specie.name,
-                            type: character.type
-                        }))
+                    results: characters.map((character)=>this.CharacterToDto(character))
                 }
             }
             myCursor = characters[pageSize-1].character_id + 1;
@@ -111,13 +125,7 @@ export class CharactersService {
         
         if (!character) throw new NotFoundException('Character not found.')
 
-        return {
-            id: character.character_id,
-            name: character.name,
-            status: character.Status.value,
-            species: character.Specie.name,
-            type: character.type
-        }
+        return this.CharacterToDto(character);
     }
 
     async updateCharacter(id: number, character: UpdateCharacterDto): Promise<CharacterDto>{
@@ -147,6 +155,25 @@ export class CharactersService {
             if (!species) throw new BadRequestException('Species not found');
         }
 
+        const characterRepeated = (character.type.length && character.specie_id && character.name) ?  
+            await this.prisma.character.findFirst(
+            {
+                where: {
+                    type: character.type,
+                    Specie:{
+                        subcategory_id: character.specie_id
+                    },
+                    name: character.name,
+                    character_id: {
+                        not:{
+                            equals: id
+                        }
+                    }
+                }
+            }
+        ) : null
+
+        if (characterRepeated) throw new BadRequestException('Character names with the same species and type cannot be repeated');
 
         let updated = await this.prisma.character.update({
             where: {
@@ -160,14 +187,8 @@ export class CharactersService {
         })
 
         if (!updated) throw new  BadRequestException(`Character with id: ${id} not found hence it couldn't be updated`);
-        
-        return {
-            id: updated.character_id,
-            name: updated.name,
-            status: updated.Status.value,
-            species: updated.Specie.name,
-            type: updated.type
-        };
+
+        return this.CharacterToDto(updated);
     }
 
     async cancelCharacter(id: number): Promise<string>{
@@ -243,4 +264,15 @@ export class CharactersService {
             }
         ));
     }
+
+    private CharacterToDto(character: Character & {Specie: Subcategory, Status: Status}) : CharacterDto {
+        return {
+            id :character.character_id,
+            name: character.name,
+            type: character.type,
+            status: character.Status.value,
+            species: character.Specie.name
+        }
+    }
+
 }

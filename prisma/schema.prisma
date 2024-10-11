@@ -43,7 +43,7 @@ model Episode {
 model Character {
   character_id Int         @id @default(autoincrement())
   name         String      @db.VarChar(200)
-  type         String      @db.VarChar(100)
+  type         String?      @db.VarChar(100)
   status_id    Int
   specie_id    Int
   Specie       Subcategory @relation(fields: [specie_id], references: [subcategory_id])
@@ -77,6 +77,5 @@ model Status {
   characters     Character[]
   episodes       Episode[]
   status_type    Status_Type @relation(fields: [status_type_id], references: [status_type_id])
-
   @@map("status")
 }

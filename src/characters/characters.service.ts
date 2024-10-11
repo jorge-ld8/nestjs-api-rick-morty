@@ -3,8 +3,6 @@ import { Character } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UpdateCharacterDto } from './dto/update-character.dto';
 import { CharacterDto } from './dto/character.dto';
-import { equal } from 'assert';
-import { all } from 'axios';
 
 @Injectable()
 export class CharactersService {
@@ -23,7 +21,6 @@ export class CharactersService {
         },
         results: CharacterDto[]
     }>{
-        // curr page size can be changed
         const pageSize = 5;
         const allCharacters = (await this.prisma.character.findMany({where: {
             AND:[
@@ -99,12 +96,26 @@ export class CharactersService {
         }
     }
 
-    async getCharacterById(id: number): Promise<Character> {
-        return await this.prisma.character.findFirstOrThrow({
+    async getCharacterById(id: number): Promise<CharacterDto> {
+        const character = await this.prisma.character.findUnique({
             where: {
                 character_id : id
+            },
+            include: {
+                Status: true,
+                Specie: true
             }
         });
+        
+        if (!character) throw new NotFoundException('Character not found')
+
+        return {
+            id: character.character_id,
+            name: character.name,
+            status: character.Status.value,
+            species: character.Specie.name,
+            type: character.type
+        }
     }
 
     async updateCharacter(id: number, character: UpdateCharacterDto): Promise<CharacterDto>{
@@ -162,7 +173,7 @@ export class CharactersService {
             const statusTypeCharacterId = (await this.prisma.status_Type.findFirst({where: {value: "Character"}})).status_type_id;
 
             if (!statusTypeCharacterId){
-                throw new BadRequestException('Status Character Cancelled not found');
+                throw new BadRequestException("Status Character 'Cancelled' not found");
             }
 
             const character = await this.prisma.character.update({
@@ -175,7 +186,7 @@ export class CharactersService {
             })
 
             if (!character){
-                throw new NotFoundException(`Record with id: ${id} not found`);
+                throw new NotFoundException(`Character not found`);
             }
 
             return 'Character has been succesfully suspended';

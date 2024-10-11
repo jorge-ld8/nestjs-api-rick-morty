@@ -36,8 +36,13 @@ export class CharactersController {
     @Get(':id')
     async getCharacterById(
         @Param('id', ParseIntPipe) id: number
-    ): Promise<Character>{
-        return await this.charactersService.getCharacterById(id);
+    ): Promise<CharacterDto>{
+        try{
+            return await this.charactersService.getCharacterById(id);
+        }
+        catch(e){
+            throw e;
+        }
     }
 
     @Patch(':id')

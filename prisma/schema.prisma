@@ -8,47 +8,47 @@ datasource db {
 }
 
 model Category {
-  category_id   Int           @id @default(autoincrement())
-  name          String        @db.VarChar(100)
-  subcategories Subcategory[]
+  category_id          Int           @id @default(autoincrement())
+  name                 String        @db.VarChar(100)
+  subcategories        Subcategory[]
 
   @@map("categories")
 }
 
 model Subcategory {
-  subcategory_id Int         @id @default(autoincrement())
-  name           String      @db.VarChar(100)
-  category_id    Int
-  Characters     Character[]
-  Episodes       Episode[]
-  category       Category    @relation(fields: [category_id], references: [category_id])
+  subcategory_id       Int         @id @default(autoincrement())
+  name                 String      @db.VarChar(100)
+  category_id          Int
+  Characters           Character[]
+  Episodes             Episode[]
+  category             Category    @relation(fields: [category_id], references: [category_id])
 
   @@map("subcategories")
 }
 
 model Episode {
-  name         String      @db.VarChar(200)
-  length       Int         
-  airDate      DateTime   
-  status_id    Int
-  season_id    Int
-  episode_code String      @db.VarChar(100)
-  episode_id   Int         @id @default(autoincrement())
-  Season       Subcategory @relation(fields: [season_id], references: [subcategory_id])
-  Status       Status      @relation(fields: [status_id], references: [status_id])
-
+  name                 String      @db.VarChar(200)
+  length               Int         
+  airDate              DateTime   
+  status_id            Int
+  season_id            Int
+  episode_code         String      @db.VarChar(100)
+  episode_id           Int         @id @default(autoincrement())
+  Season               Subcategory @relation(fields: [season_id], references: [subcategory_id])
+  Status               Status      @relation(fields: [status_id], references: [status_id])
+  Episode_Characters   Character_Episode[]
   @@map("episodes")
 }
 
 model Character {
-  character_id Int         @id @default(autoincrement())
-  name         String      @db.VarChar(200)
-  type         String?      @db.VarChar(100)
-  status_id    Int
-  specie_id    Int
-  Specie       Subcategory @relation(fields: [specie_id], references: [subcategory_id])
-  Status       Status      @relation(fields: [status_id], references: [status_id])
-
+  character_id         Int         @id @default(autoincrement())
+  name                 String      @db.VarChar(200)
+  type                 String?      @db.VarChar(100)
+  status_id            Int
+  specie_id            Int
+  Specie               Subcategory @relation(fields: [specie_id], references: [subcategory_id])
+  Status               Status      @relation(fields: [status_id], references: [status_id])
+  Character_Episodes   Character_Episode[]
   @@map("characters")
 }
 
@@ -58,24 +58,24 @@ model Character_Episode {
   episode_id           Int
   start_time           String
   end_time             String
-
+  Character            Character @relation(fields: [character_id], references: [character_id])
+  Episode              Episode   @relation(fields: [episode_id], references: [episode_id])
   @@map("characters_episodes")
 }
 
 model Status_Type {
-  status_type_id Int      @id @default(autoincrement())
-  value          String
-  status         Status[]
-
+  status_type_id       Int      @id @default(autoincrement())
+  value                String
+  status               Status[]
   @@map("status_types")
 }
 
 model Status {
-  status_id      Int         @id @default(autoincrement())
-  value          String
-  status_type_id Int
-  characters     Character[]
-  episodes       Episode[]
-  status_type    Status_Type @relation(fields: [status_type_id], references: [status_type_id])
+  status_id            Int         @id @default(autoincrement())
+  value                String
+  status_type_id       Int
+  characters           Character[]
+  episodes             Episode[]
+  status_type          Status_Type @relation(fields: [status_type_id], references: [status_type_id])
   @@map("status")
 }

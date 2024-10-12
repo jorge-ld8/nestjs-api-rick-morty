@@ -19,7 +19,14 @@ export class CharactersService {
                     Specie:{
                         subcategory_id: data.specie_id
                     },
-                    name: data.name
+                    name: data.name,
+                    Status: {
+                        value: {
+                            not:{
+                                equals: "Suspended"
+                            }
+                        }
+                    }
                 }
             }
         ) : null
@@ -45,14 +52,21 @@ export class CharactersService {
         results: CharacterDto[]
     }>{
         const pageSize = 5;
-        const allCharacters = (await this.prisma.character.findMany({where: {
-            AND:[
-                {type},
-                {Specie:{
+        const allCharacters = (await this.prisma.character.findMany({
+            where: {
+                type: type,
+                Specie:{
                     name: species
-                }}
-            ]
-        },orderBy: {character_id: 'asc'}}));
+                },
+                Status: {
+                    value: {
+                        not:{
+                            equals: "Suspended"
+                        }
+                    }
+                }
+            },
+            orderBy: {character_id: 'asc'}}));
 
         if (allCharacters.length==0){
             return {
@@ -77,12 +91,17 @@ export class CharactersService {
         for (let currPage = 1; currPage <= totalPages; currPage++){
             let characters = await this.prisma.character.findMany({
                     where: {
-                        AND:[
-                            {type},
-                            {Specie:{
+                            type: type,
+                            Specie:{
                                 name: species
-                            }}
-                        ]
+                            },
+                            Status: {
+                                value: {
+                                    not:{
+                                        equals: "Suspended"
+                                    }
+                                }
+                            }
                     },
                     include:{
                         Specie: true,
@@ -115,7 +134,14 @@ export class CharactersService {
     async getCharacterById(id: number): Promise<CharacterDto> {
         const character = await this.prisma.character.findUnique({
             where: {
-                character_id : id
+                character_id : id,
+                Status: {
+                    value: {
+                        not:{
+                            equals: "Suspended"
+                        }
+                    }
+                }
             },
             include: {
                 Status: true,
@@ -135,7 +161,7 @@ export class CharactersService {
                         status_id: character.status_id,
                         status_type: {
                             value: "Character"
-                        }
+                        },
                 },
             });
 
@@ -178,6 +204,13 @@ export class CharactersService {
         let updated = await this.prisma.character.update({
             where: {
                 character_id: id,
+                Status: {
+                    value: {
+                        not:{
+                            equals: "Suspended"
+                        }
+                    }
+                }
             },
             data: character,
             include: {
@@ -186,7 +219,7 @@ export class CharactersService {
             }
         })
 
-        if (!updated) throw new  BadRequestException(`Character with id: ${id} not found hence it couldn't be updated`);
+        if (!updated) throw new BadRequestException(`Character with id: ${id} not found hence it couldn't be updated`);
 
         return this.CharacterToDto(updated);
     }
@@ -195,22 +228,28 @@ export class CharactersService {
         try {
             const statusTypeCharacterId = (await this.prisma.status_Type.findFirst({where: {value: "Character"}})).status_type_id;
 
-            if (!statusTypeCharacterId){
-                throw new BadRequestException("Status Character 'Cancelled' not found");
-            }
+            if (!statusTypeCharacterId) throw new BadRequestException("Status Character 'Suspended' not found");
 
             const character = await this.prisma.character.update({
                 where: {
-                    character_id: id
+                    character_id: id,
+                    Status: {
+                        value: {
+                            not:{
+                                equals: "Suspended"
+                            }
+                        }
+                    }
                 },
                 data:{
-                    status_id : (await this.prisma.status.findFirst({where: {AND: [{value: "Cancelled"}, {status_type_id: statusTypeCharacterId}]}})).status_id
+                    status_id : (await this.prisma.status.findFirst({where: {
+                                                                            value: "Suspended", 
+                                                                            status_type_id: statusTypeCharacterId,
+                                                                        }})).status_id
                 }
             })
 
-            if (!character){
-                throw new NotFoundException(`Character not found.`);
-            }
+            if (!character) throw new NotFoundException(`Character not found.`);
 
             return 'Character has been succesfully suspended';
         }

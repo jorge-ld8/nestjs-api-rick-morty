@@ -28,8 +28,8 @@ model Subcategory {
 
 model Episode {
   name         String      @db.VarChar(200)
-  length       Int
-  airDate      DateTime
+  length       Int         
+  airDate      DateTime   
   status_id    Int
   season_id    Int
   episode_code String      @db.VarChar(100)

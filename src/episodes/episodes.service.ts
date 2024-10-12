@@ -28,6 +28,12 @@ export class EpisodesService {
         Season:{
           name: {
             contains: (seasonNum + "").padStart(2, '0')
+          },
+        },
+        Status:{
+          value: { not: {
+              equals: 'Cancelled'
+            }
           }
         }
       },
@@ -59,6 +65,13 @@ export class EpisodesService {
                       name: createEpisodeDto.name,
                       Season: {
                         subcategory_id: createEpisodeDto.season_id,
+                      },
+                      Status:{
+                        value: {
+                          not: {
+                            equals: 'Cancelled'
+                          }
+                        }
                       }
                     },
                     include:{
@@ -89,7 +102,21 @@ export class EpisodesService {
 
   async getAllEpisodes(page:number=1){
     const pageSize = 5;
-    const allEpisodes = await this.prisma.episode.findMany({orderBy: {episode_id: 'asc'}});
+    const allEpisodes = await this.prisma.episode.findMany({
+      where: {
+        Status:{
+            value: {
+              not: {
+                equals: 'Cancelled'
+              }
+            }
+          }
+      },
+      orderBy: 
+      {
+        episode_id: 'asc'
+      }
+    });
 
     if (allEpisodes.length==0){
         return {
@@ -113,6 +140,15 @@ export class EpisodesService {
 
     for (let currPage = 1; currPage <= totalPages; currPage++){
         let episodes = await this.prisma.episode.findMany({
+                where: {
+                  Status:{
+                      value: {
+                        not: {
+                          equals: 'Cancelled'
+                        }
+                      }
+                    }
+                },
                 include:{
                     Season: true,
                     Status: true
@@ -151,6 +187,12 @@ export class EpisodesService {
           category:{
             name: "Season"
           }
+        },
+        Status:{
+          value: { not: {
+              equals: 'Cancelled'
+            }
+          }
         }
       },
       include:{
@@ -161,7 +203,7 @@ export class EpisodesService {
         episode_id: 'asc'
       }
     });
-    
+
     if (episodes.length == 0) throw new NotFoundException('Season Does Not Exist');
 
     return episodes.map((episode)=>(this.EpisodeToDto(episode)))
@@ -175,8 +217,38 @@ export class EpisodesService {
     return `This action updates a #${id} episode`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} episode`;
+  async cancelEpisode(id: number) : Promise<string>{
+    try {
+      const statusTypeEpisodeId = (await this.prisma.status_Type.findFirst({where: {value: "Episode"}})).status_type_id;
+
+      if (!statusTypeEpisodeId){
+          throw new BadRequestException("Status Episode 'Cancelled' not found");
+      }
+
+      const episode = await this.prisma.episode.update({
+          where: {
+              episode_id: id,
+              Status:{
+                value: { not: {
+                    equals: 'Cancelled'
+                  }
+                }
+              }
+          },
+          data:{
+              status_id : (await this.prisma.status.findFirst({where: {value: "Cancelled", status_type_id: statusTypeEpisodeId}})).status_id
+          }
+      })
+
+      if (!episode){
+          throw new NotFoundException(`Episode not found.`);
+      }
+
+      return 'Episode has been succesfully cancelled';
+    } 
+    catch(error){
+        throw error;
+    }
   }
 
   private EpisodeToDto(episode: Episode & {Season: Subcategory, Status: Status}) : EpisodeDto {

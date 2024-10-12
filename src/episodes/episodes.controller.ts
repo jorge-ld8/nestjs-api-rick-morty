@@ -46,7 +46,7 @@ export class EpisodesController {
   async createEpisode(@Body() createEpisodeDto: CreateEpisodeDto) {
     return await this.episodesService.createEpisode(createEpisodeDto);
   }
-  
+
   @Get('/season/:seasonNumber')
   async getEpisodesBySeason(
     @Param('seasonNumber', ParseIntPipe) seasonNumber: number
@@ -72,6 +72,15 @@ export class EpisodesController {
     }
   }
 
+  @Delete(':id')
+  async cancelEpisode(@Param('id', ParseIntPipe) id: number) {
+    try{
+      return await this.episodesService.cancelEpisode(+id);
+    }
+    catch(error){
+      throw error;
+    }
+  }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
@@ -83,8 +92,5 @@ export class EpisodesController {
     return this.episodesService.update(+id, updateEpisodeDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.episodesService.remove(+id);
-  }
+
 }

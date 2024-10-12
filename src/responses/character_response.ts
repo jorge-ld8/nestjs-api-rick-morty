@@ -1,6 +1,6 @@
 import { IsString, IsOptional, IsNotEmpty} from 'class-validator';
 
-export class CharacterDto {
+export class CharacterResponse {
   id: number;
 
   @IsString()

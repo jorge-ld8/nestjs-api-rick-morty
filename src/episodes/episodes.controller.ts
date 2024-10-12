@@ -2,8 +2,8 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe 
 import { EpisodesService } from './episodes.service';
 import { CreateEpisodeDto } from './dto/create-episode.dto';
 import { UpdateEpisodeDto } from './dto/update-episode.dto';
-import { StandardResponseDto } from 'src/utils/response-dto';
-import { EpisodeDto } from './dto/episode.dto';
+import { StandardResponseDto } from 'src/responses/standar_response';
+import { EpisodeResponse } from '../responses/episode_response';
 import { ApiBody, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { UpdateCharacterDto } from 'src/characters/dto/update-character.dto';
 
@@ -40,7 +40,7 @@ export class EpisodesController {
   @ApiParam({ name: 'seasonNumber', required: true, description: 'Number of season', type: Number})
   async getEpisodesBySeason(
     @Param('seasonNumber', ParseIntPipe) seasonNumber: number
-  ): Promise<EpisodeDto[]>{
+  ): Promise<EpisodeResponse[]>{
     try{
       return await this.episodesService.getEpisodesBySeason(seasonNumber);
     }
@@ -53,7 +53,7 @@ export class EpisodesController {
   @ApiQuery({ name: 'page', required: false, description: 'Page number', type: Number})
   async getAllEpisodes(
     @Query('page') page: number=1
-  ): Promise<StandardResponseDto<EpisodeDto>> {
+  ): Promise<StandardResponseDto<EpisodeResponse>> {
     try{
       return await this.episodesService.getAllEpisodes(+page);
     }
@@ -64,7 +64,7 @@ export class EpisodesController {
 
   @Get(':id')
   @ApiParam({ name: 'id', required: true, description: 'Unique identifier of Episode', type: Number})
-  async getEpisodeById(@Param('id', ParseIntPipe) id: number): Promise<EpisodeDto> {
+  async getEpisodeById(@Param('id', ParseIntPipe) id: number): Promise<EpisodeResponse> {
     try{
       return await this.episodesService.getEpisodeById(id);
     }
@@ -92,7 +92,7 @@ export class EpisodesController {
   async updateEpisode(
     @Param('id', ParseIntPipe) id: number, 
     @Body() updateEpisodeDto: UpdateEpisodeDto
-  ): Promise<EpisodeDto>{
+  ): Promise<EpisodeResponse>{
     console.log('hola');
     return this.episodesService.updateEpisode(+id, updateEpisodeDto);
   }

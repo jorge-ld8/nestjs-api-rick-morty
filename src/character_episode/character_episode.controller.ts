@@ -2,9 +2,9 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe 
 import { CharacterEpisodeService } from './character_episode.service';
 import { CreateCharacterEpisodeDto } from './dto/create-character_episode.dto';
 import { UpdateCharacterEpisodeDto } from './dto/update-character_episode.dto';
-import { CharacterEpisodeResponse } from './responses/character_episode.entity';
+import { CharacterEpisodeResponse } from '../responses/character_episode_response';
 import { ApiBody, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { StandardResponseDto } from 'src/utils/response-dto';
+import { StandardResponseDto } from 'src/responses/standar_response';
 import { DeleteCharacterEpisodeDto } from './dto/delete-character_episode.dto';
 
 @ApiTags('CharactersEpisodes')

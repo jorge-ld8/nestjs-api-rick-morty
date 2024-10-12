@@ -1,4 +1,4 @@
-export class EpisodeDto {
+export class EpisodeResponse {
     id: number;
 
     name: string;

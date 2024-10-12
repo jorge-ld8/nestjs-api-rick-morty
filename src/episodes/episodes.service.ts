@@ -3,8 +3,8 @@ import { CreateEpisodeDto } from './dto/create-episode.dto';
 import { UpdateEpisodeDto } from './dto/update-episode.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Episode, Status, Subcategory } from '@prisma/client';
-import { EpisodeDto } from './dto/episode.dto';
-import { StandardResponseDto } from 'src/utils/response-dto';
+import { EpisodeResponse } from '../responses/episode_response';
+import { StandardResponseDto } from 'src/responses/standar_response';
 
 @Injectable()
 export class EpisodesService {
@@ -32,7 +32,7 @@ export class EpisodesService {
     return currSeasonEpisode + 1;
   }
 
-  async createEpisode(createEpisodeDto: CreateEpisodeDto) : Promise<EpisodeDto>{
+  async createEpisode(createEpisodeDto: CreateEpisodeDto) : Promise<EpisodeResponse>{
     const currSeasonNum = (await this.prisma.subcategory.findFirst(
       {
         where: {
@@ -87,7 +87,7 @@ export class EpisodesService {
     return this.EpisodeToDto(episode);
   }
 
-  async getAllEpisodes(page:number=1) : Promise<StandardResponseDto<EpisodeDto>>{
+  async getAllEpisodes(page:number=1) : Promise<StandardResponseDto<EpisodeResponse>>{
     const pageSize = 5;
     const allEpisodes = await this.prisma.episode.findMany({
       where: {
@@ -164,7 +164,7 @@ export class EpisodesService {
     }
   }
 
-  async getEpisodesBySeason(seasonNum: number) : Promise<EpisodeDto[]>{
+  async getEpisodesBySeason(seasonNum: number) : Promise<EpisodeResponse[]>{
     const episodes = await this.prisma.episode.findMany({
       where:{
         Season:{
@@ -200,7 +200,7 @@ export class EpisodesService {
     return `This action returns a #${id} episode`;
   }
 
-  async updateEpisode(id: number, episode: UpdateEpisodeDto) : Promise<EpisodeDto> {
+  async updateEpisode(id: number, episode: UpdateEpisodeDto) : Promise<EpisodeResponse> {
     if (episode.season_id){
         const season = await this.prisma.subcategory.findUnique({
             where:{
@@ -264,7 +264,7 @@ export class EpisodesService {
   }
 
 
-  async getEpisodeById(id: number) : Promise<EpisodeDto>{
+  async getEpisodeById(id: number) : Promise<EpisodeResponse>{
     const episode = await this.prisma.episode.findUnique({
       where: {
           episode_id : id
@@ -314,7 +314,7 @@ export class EpisodesService {
     }
   }
 
-  private EpisodeToDto(episode: Episode & {Season: Subcategory, Status: Status}) : EpisodeDto {
+  private EpisodeToDto(episode: Episode & {Season: Subcategory, Status: Status}) : EpisodeResponse {
     return {
         id: episode.episode_id,
         name: episode.name,

@@ -2,11 +2,11 @@ import { BadRequestException, Body, Controller, Delete, Get, NotFoundException, 
 import { CharactersService } from './characters.service';
 import { Character } from '@prisma/client';
 import { UpdateCharacterDto } from './dto/update-character.dto';
-import { CharacterDto } from './dto/character.dto';
+import { CharacterResponse } from '../responses/character_response';
 import { ApiQuery, ApiParam, ApiResponse, ApiBody, ApiTags} from '@nestjs/swagger'
-import { StandardResponseDto } from 'src/utils/response-dto';
-import { SpeciesDTO } from './dto/species.dto';
-import { StatusDTO } from './dto/status.dto';
+import { StandardResponseDto } from 'src/responses/standar_response';
+import { SpeciesResponse } from './dto/species.dto';
+import { StatusResponse } from './dto/status.dto';
 import { CreateCharacterDto } from './dto/create-character.dto';
 
 @ApiTags('Characters')
@@ -16,7 +16,7 @@ export class CharactersController {
 
 
     @Get('species')
-    async getAllSpecies(): Promise<SpeciesDTO[]>{
+    async getAllSpecies(): Promise<SpeciesResponse[]>{
         try{
             return await this.charactersService.getAllSpecies();
         }
@@ -26,7 +26,7 @@ export class CharactersController {
     }
 
     @Get('status')
-    async getAllStatus(): Promise<StatusDTO[]>{
+    async getAllStatus(): Promise<StatusResponse[]>{
         try{
             return await this.charactersService.getAllStatus();
         }
@@ -50,11 +50,11 @@ export class CharactersController {
             }
         }
     })
-    @ApiResponse({ status: 200, description: 'Character created successfully.', type: CharacterDto })
+    @ApiResponse({ status: 200, description: 'Character created successfully.', type: CharacterResponse })
     @ApiResponse({ status: 400, description: 'Character not created.' })
     async createCharacter(
         @Body() character: CreateCharacterDto
-    ): Promise<CharacterDto>{
+    ): Promise<CharacterResponse>{
         try{
             return await this.charactersService.createCharacter(character);
         }
@@ -71,7 +71,7 @@ export class CharactersController {
         @Query('page') page: number=1, 
         @Query('type') type?: string,
         @Query('species') species?: string,
-    ): Promise<StandardResponseDto<CharacterDto>> {
+    ): Promise<StandardResponseDto<CharacterResponse>> {
         try{
             return await this.charactersService.getAllCharacters(+page, type, species);
         }
@@ -83,11 +83,11 @@ export class CharactersController {
 
     @Get(':id')
     @ApiParam({ name: 'id', required: true, description: 'Unique identifier of the character', type: Number, example: 825})
-    @ApiResponse({ status: 200, description: 'Character retrieved successfully.', type: CharacterDto })
+    @ApiResponse({ status: 200, description: 'Character retrieved successfully.', type: CharacterResponse })
     @ApiResponse({ status: 404, description: 'Character not found.' })
     async getCharacterById(
         @Param('id', ParseIntPipe) id: number
-    ): Promise<CharacterDto>{
+    ): Promise<CharacterResponse>{
         try{
             return await this.charactersService.getCharacterById(id);
         }
@@ -113,12 +113,12 @@ export class CharactersController {
             },
         },
     })
-    @ApiResponse({ status: 200, description: 'Character updated successfully.', type: CharacterDto })
+    @ApiResponse({ status: 200, description: 'Character updated successfully.', type: CharacterResponse })
     @ApiResponse({ status: 404, description: 'Character not found.' })
     async updateCharacter(
         @Param('id', ParseIntPipe) id: number, 
         @Body() character: UpdateCharacterDto                    
-    ): Promise<CharacterDto>{
+    ): Promise<CharacterResponse>{
         return await this.charactersService.updateCharacter(id, character);
     }
 

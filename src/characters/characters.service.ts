@@ -2,17 +2,17 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { Character, Status, Subcategory } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UpdateCharacterDto } from './dto/update-character.dto';
-import { CharacterDto } from './dto/character.dto';
-import { SpeciesDTO } from './dto/species.dto';
-import { StatusDTO } from './dto/status.dto';
+import { CharacterResponse } from '../responses/character_response';
+import { SpeciesResponse } from './dto/species.dto';
+import { StatusResponse } from './dto/status.dto';
 import { CreateCharacterDto } from './dto/create-character.dto';
-import { StandardResponseDto } from 'src/utils/response-dto';
+import { StandardResponseDto } from 'src/responses/standar_response';
 
 @Injectable()
 export class CharactersService {
     constructor(private readonly prisma: PrismaService){}
 
-    async createCharacter(data: CreateCharacterDto) : Promise<CharacterDto> {
+    async createCharacter(data: CreateCharacterDto) : Promise<CharacterResponse> {
         const characterRepeated = data.type.length ?  await this.prisma.character.findFirst(
             {
                 where: {
@@ -43,7 +43,7 @@ export class CharactersService {
         return this.CharacterToDto(character);
     }
 
-    async getAllCharacters(page:number, type?: string, species?: string) : Promise<StandardResponseDto<CharacterDto>>{
+    async getAllCharacters(page:number, type?: string, species?: string) : Promise<StandardResponseDto<CharacterResponse>>{
         const pageSize = 5;
         const allCharacters = (await this.prisma.character.findMany({
             where: {
@@ -124,7 +124,7 @@ export class CharactersService {
         }
     }
 
-    async getCharacterById(id: number): Promise<CharacterDto> {
+    async getCharacterById(id: number): Promise<CharacterResponse> {
         const character = await this.prisma.character.findUnique({
             where: {
                 character_id : id,
@@ -147,7 +147,7 @@ export class CharactersService {
         return this.CharacterToDto(character);
     }
 
-    async updateCharacter(id: number, character: UpdateCharacterDto): Promise<CharacterDto>{
+    async updateCharacter(id: number, character: UpdateCharacterDto): Promise<CharacterResponse>{
         if (character.status_id){
             const status = await this.prisma.status.findUnique({
                 where: {
@@ -251,7 +251,7 @@ export class CharactersService {
         }
     }
 
-    async getAllSpecies(): Promise<SpeciesDTO[]>{
+    async getAllSpecies(): Promise<SpeciesResponse[]>{
         const speciesList =  await this.prisma.subcategory.findMany({
             where:{
                 category: {
@@ -274,7 +274,7 @@ export class CharactersService {
         ));
     }
 
-    async getAllStatus(): Promise<StatusDTO[]>{
+    async getAllStatus(): Promise<StatusResponse[]>{
         const statusList = await this.prisma.status.findMany({
             where:{
                 status_type: {
@@ -297,7 +297,7 @@ export class CharactersService {
         ));
     }
 
-    private CharacterToDto(character: Character & {Specie: Subcategory, Status: Status}) : CharacterDto {
+    private CharacterToDto(character: Character & {Specie: Subcategory, Status: Status}) : CharacterResponse {
         return {
             id :character.character_id,
             name: character.name,

@@ -1,4 +1,4 @@
-export class SpeciesDTO {
+export class SpeciesResponse {
     id: number;
     name: string;
 }

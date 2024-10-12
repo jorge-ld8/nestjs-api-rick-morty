@@ -36,7 +36,9 @@ export class EpisodesService {
     const currSeasonNum = (await this.prisma.subcategory.findFirst(
       {
         where: {
-          subcategory_id: createEpisodeDto.season_id,
+          name: {
+            endsWith: (createEpisodeDto.seasonNum+"").padStart(2, '0')
+          },
           category:{
             name: "Season"
           }
@@ -51,7 +53,9 @@ export class EpisodesService {
                     where: {
                       name: createEpisodeDto.name,
                       Season: {
-                        subcategory_id: createEpisodeDto.season_id,
+                        name: {
+                          endsWith: (createEpisodeDto.seasonNum+"").padStart(2, '0')
+                        },
                       },
                       Status:{
                         value: {
@@ -71,9 +75,18 @@ export class EpisodesService {
 
     const currentDate = new Date(createEpisodeDto.airDate);
     currentDate.setHours(currentDate.getHours() + 6);
-
+    // model Episode {
+    //   name                 String      @db.VarChar(200)
+    //   length               Int         
+    //   airDate              DateTime   
+    //   status_id            Int
+    //   season_id            Int
+    //   episode_code         String      @db.VarChar(100)
+    //   episode_id           Int         @id @default(autoincrement())
     const episode = await this.prisma.episode.create({
-      data: {...createEpisodeDto,
+      data: {name: createEpisodeDto.name,
+            length: createEpisodeDto.length,
+            season_id: (await this.prisma.subcategory.findFirst({ where: {name:{endsWith: (createEpisodeDto.seasonNum+"").padStart(2, '0')}}})).subcategory_id,
             airDate: currentDate,
             episode_code: `S${currSeasonNum.padStart(2, '0')}E${((await this.getEpisodeNumberForSeason(+currSeasonNum))+"").padStart(2, '0')}`,
             status_id: (await this.prisma.status.findFirst({ where:{value: "Active", status_type: {value: 'Episode'}},}))?.status_id ?? 1
@@ -200,26 +213,30 @@ export class EpisodesService {
     return `This action returns a #${id} episode`;
   }
 
-  async updateEpisode(id: number, episode: UpdateEpisodeDto) : Promise<EpisodeResponse> {
-    if (episode.season_id){
-        const season = await this.prisma.subcategory.findUnique({
+  async updateEpisode(id: number, updateEpisodeDto: UpdateEpisodeDto) : Promise<EpisodeResponse> {
+    if (updateEpisodeDto.seasonNum){
+        const season = await this.prisma.subcategory.findFirst({
             where:{
-                    subcategory_id: episode.season_id,
+                  name: {
+                    endsWith: (updateEpisodeDto.seasonNum+"").padStart(2, '0')
+                  },
                     category: {
                         name: "Season"
                     }
             }
         });
 
-        if (!season) throw new BadRequestException('Species not found');
+        if (!season) throw new BadRequestException('Season not found');
     }
 
     const episodeRepeated = await this.prisma.episode.findFirst(
                 {
                     where: {
-                      name: episode.name,
+                      name: updateEpisodeDto.name,
                       Season: {
-                        subcategory_id: episode.season_id,
+                        name: {
+                          endsWith: (updateEpisodeDto.seasonNum+"").padStart(2, '0')
+                        },
                       },
                       Status:{
                         value: {
@@ -237,7 +254,7 @@ export class EpisodesService {
 
     if (episodeRepeated) throw new BadRequestException('There is already an episode with the same name in the same season');
     
-    const currentDate = new Date(episode.airDate);
+    const currentDate = new Date(updateEpisodeDto.airDate);
     currentDate.setHours(currentDate.getHours() + 6);
 
     let updated = await this.prisma.episode.update({
@@ -251,7 +268,7 @@ export class EpisodesService {
               }
             }
         },
-        data: {...episode, airDate:currentDate},
+        data: {...updateEpisodeDto, airDate:currentDate},
         include: {
             Status: true,
             Season: true

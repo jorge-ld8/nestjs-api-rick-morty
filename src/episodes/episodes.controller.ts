@@ -20,9 +20,9 @@ export class EpisodesController {
         createEpisodeExample: {
             value: {
                 name: "Battle of the Bastards",
-                length: 55,
+                length: 22*60,
                 airDate: '2014-01-01',
-                season_id: 11,
+                seasonNum: 1,
             }
         }
     }

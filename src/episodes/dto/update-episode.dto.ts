@@ -9,5 +9,5 @@ export class UpdateEpisodeDto extends PartialType(CreateEpisodeDto) {
 
     airDate?: string;
 
-    season_id?: number;
+    seasonNum?: number;
 }

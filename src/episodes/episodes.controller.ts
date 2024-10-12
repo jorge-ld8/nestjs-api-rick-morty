@@ -7,23 +7,6 @@ import { EpisodeDto } from './dto/episode.dto';
 import { ApiBody, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { UpdateCharacterDto } from 'src/characters/dto/update-character.dto';
 
-// export class CreateEpisodeDto {
-//   @IsNotEmpty()
-//   @IsString()
-//   name: string;
-
-//   @IsNotEmpty()
-//   @IsInt()
-//   length: number;
-
-//   @IsNotEmpty()
-//   @IsDate()
-//   airDate: Date;
-  
-//   @IsNotEmpty()
-//   @IsInt()
-//   season
-
 @ApiTags('Episodes')
 @Controller('episodes')
 export class EpisodesController {
@@ -45,10 +28,16 @@ export class EpisodesController {
     }
 })
   async createEpisode(@Body() createEpisodeDto: CreateEpisodeDto) {
-    return await this.episodesService.createEpisode(createEpisodeDto);
+    try{
+      return await this.episodesService.createEpisode(createEpisodeDto);
+    }
+    catch(error){
+      throw error;
+    }
   }
 
   @Get('/season/:seasonNumber')
+  @ApiParam({ name: 'seasonNumber', required: true, description: 'Number of season', type: Number})
   async getEpisodesBySeason(
     @Param('seasonNumber', ParseIntPipe) seasonNumber: number
   ): Promise<EpisodeDto[]>{
@@ -74,6 +63,7 @@ export class EpisodesController {
   }
 
   @Get(':id')
+  @ApiParam({ name: 'id', required: true, description: 'Unique identifier of Episode', type: Number})
   async getEpisodeById(@Param('id', ParseIntPipe) id: number): Promise<EpisodeDto> {
     try{
       return await this.episodesService.getEpisodeById(id);
@@ -83,22 +73,11 @@ export class EpisodesController {
     }
   }  
 
-
-  @Delete(':id')
-  async cancelEpisode(@Param('id', ParseIntPipe) id: number): Promise<string> {
-    try{
-      return await this.episodesService.cancelEpisode(+id);
-    }
-    catch(error){
-      throw error;
-    }
-  }
-
   @Patch(':id')
-  @ApiParam({ name: 'id', required: true, description: 'Unique identifier of the character', type: Number})
+  @ApiParam({ name: 'id', required: true, description: 'Unique identifier of the episode', type: Number})
   @ApiBody({
-      description: 'Update character data',
-      type: UpdateCharacterDto,
+      description: 'Update episode data',
+      type: UpdateEpisodeDto,
       examples: {
           updateCharacterExample: {
               value: {
@@ -116,5 +95,16 @@ export class EpisodesController {
   ): Promise<EpisodeDto>{
     console.log('hola');
     return this.episodesService.updateEpisode(+id, updateEpisodeDto);
+  }
+
+  @Delete(':id')
+  @ApiParam({ name: 'id', required: true, description: 'Unique identifier of Episode', type: Number})
+  async cancelEpisode(@Param('id', ParseIntPipe) id: number): Promise<string> {
+    try{
+      return await this.episodesService.cancelEpisode(+id);
+    }
+    catch(error){
+      throw error;
+    }
   }
 }

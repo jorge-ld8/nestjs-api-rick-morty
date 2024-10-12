@@ -123,7 +123,7 @@ export class CharacterEpisodeService {
     let myCursor = allCharacterEpisodes[0].character_episode_id;
     let totalCount = allCharacterEpisodes.length;
     let totalPages = Math.ceil(totalCount / pageSize);
-    
+
     if (page>totalPages || page<1){
         throw new BadRequestException('Page is invalid');
     }
@@ -155,7 +155,7 @@ export class CharacterEpisodeService {
             }
         );
         if (currPage === page){
-            let urlGen = (page: number) => (`/character_episodes?page=${page-1}${characterId ? "&character_id="+characterId:""}${episodeId ? "&episode_id="+episodeId:""}${seasonNum ? "&seasonNum="+seasonNum:""}`);
+            let urlGen = (inputPage: number) => (`/character_episodes?page=${inputPage}${characterId ? "&character_id="+characterId:""}${episodeId ? "&episode_id="+episodeId:""}${seasonNum ? "&seasonNum="+seasonNum:""}`);
             return {
                 info: {
                     count: totalCount,
@@ -166,7 +166,7 @@ export class CharacterEpisodeService {
                 results: character_episodes.map((character_episode)=>this.CharacterEpisodeToResponse(character_episode))
             }
         }
-        myCursor = character_episodes[pageSize-1].character_id + 1;
+        myCursor = character_episodes[pageSize-1].character_episode_id + 1;
     }
 }
   findOne(id: number) {
@@ -232,6 +232,32 @@ export class CharacterEpisodeService {
                                           end_time: epTime.end_time
                                         });
 
+        //remove all ocurrences that fall into that interval
+        await this.prisma.character_Episode.deleteMany({
+          where: {
+            OR:[
+              {
+               start_time: {
+                  gte: secsStart,
+                  lte: secsEnd,
+                }
+             },
+             {
+               end_time: {
+                 lte: secsEnd,
+                 gte: secsStart,
+               }
+             }
+           ],
+           character_episode_id:{
+            not:{
+              equals: character_episode_id
+            }
+           }
+          }
+        });
+
+        // Insert or Update the current episode
         await this.prisma.character_Episode.upsert({
           where: {
             character_episode_id: character_episode_id ?? 0,
@@ -249,6 +275,8 @@ export class CharacterEpisodeService {
             end_time: secsEnd,
           }
         });
+
+
 
         count++;
       }

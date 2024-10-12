@@ -40,7 +40,7 @@ export class CharactersService {
                 Status: true
             }},
         );
-        return this.CharacterToDto(character);
+        return this.CharacterToResponse(character);
     }
 
     async getAllCharacters(page:number, type?: string, species?: string) : Promise<StandardResponseDto<CharacterResponse>>{
@@ -117,7 +117,7 @@ export class CharactersService {
                         prev: page > 1 ? `/characters?page=${page-1}${species ? "&species="+species:''}${type ? "&type="+type:''}` : null,
                         next: page < totalPages ? `/characters?page=${page+1}${species ? "&species="+species:''}${type ? "&type="+type:''}` : null,
                     },
-                    results: characters.map((character)=>this.CharacterToDto(character))
+                    results: characters.map((character)=>this.CharacterToResponse(character))
                 }
             }
             myCursor = characters[pageSize-1].character_id + 1;
@@ -144,7 +144,7 @@ export class CharactersService {
         
         if (!character) throw new NotFoundException('Character not found.')
 
-        return this.CharacterToDto(character);
+        return this.CharacterToResponse(character);
     }
 
     async updateCharacter(id: number, character: UpdateCharacterDto): Promise<CharacterResponse>{
@@ -214,7 +214,7 @@ export class CharactersService {
 
         if (!updated) throw new BadRequestException(`Character with id: ${id} not found hence it couldn't be updated`);
 
-        return this.CharacterToDto(updated);
+        return this.CharacterToResponse(updated);
     }
 
     async cancelCharacter(id: number): Promise<string>{
@@ -297,7 +297,7 @@ export class CharactersService {
         ));
     }
 
-    private CharacterToDto(character: Character & {Specie: Subcategory, Status: Status}) : CharacterResponse {
+    private CharacterToResponse(character: Character & {Specie: Subcategory, Status: Status}) : CharacterResponse {
         return {
             id :character.character_id,
             name: character.name,

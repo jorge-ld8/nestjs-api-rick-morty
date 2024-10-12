@@ -84,7 +84,7 @@ export class EpisodesService {
       }
     })
 
-    return this.EpisodeToDto(episode);
+    return this.EpisodeToResponse(episode);
   }
 
   async getAllEpisodes(page:number=1) : Promise<StandardResponseDto<EpisodeResponse>>{
@@ -157,7 +157,7 @@ export class EpisodesService {
                     prev: page > 1 ? `/episodes?page=${page-1}` : null,
                     next: page < totalPages ? `/episodes?page=${page+1}` : null,
                 },
-                results: episodes.map((episode)=>this.EpisodeToDto(episode))
+                results: episodes.map((episode)=>this.EpisodeToResponse(episode))
             }
         }
         myCursor = episodes[pageSize-1].episode_id + 1;
@@ -193,7 +193,7 @@ export class EpisodesService {
 
     if (episodes.length == 0) throw new NotFoundException('Season Does Not Exist');
 
-    return episodes.map((episode)=>(this.EpisodeToDto(episode)))
+    return episodes.map((episode)=>(this.EpisodeToResponse(episode)))
   }
 
   findOne(id: number) {
@@ -260,7 +260,7 @@ export class EpisodesService {
 
     if (!updated) throw new  BadRequestException(`Episode with id: ${id} not found hence it couldn't be updated`);
 
-    return this.EpisodeToDto(updated);
+    return this.EpisodeToResponse(updated);
   }
 
 
@@ -277,7 +277,7 @@ export class EpisodesService {
     
     if (!episode) throw new NotFoundException('Episode not found.')
 
-    return this.EpisodeToDto(episode);
+    return this.EpisodeToResponse(episode);
   }
 
   async cancelEpisode(id: number) : Promise<string>{
@@ -314,7 +314,7 @@ export class EpisodesService {
     }
   }
 
-  private EpisodeToDto(episode: Episode & {Season: Subcategory, Status: Status}) : EpisodeResponse {
+  private EpisodeToResponse(episode: Episode & {Season: Subcategory, Status: Status}) : EpisodeResponse {
     return {
         id: episode.episode_id,
         name: episode.name,

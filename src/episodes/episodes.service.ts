@@ -5,20 +5,6 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { Episode, Status, Subcategory } from '@prisma/client';
 import { EpisodeDto } from './dto/episode.dto';
 
-// model Episode {
-//   name         String      @db.VarChar(200)
-//   length       Int         
-//   airDate      DateTime   
-//   status_id    Int
-//   season_id    Int
-//   episode_code String      @db.VarChar(100)
-//   episode_id   Int         @id @default(autoincrement())
-//   Season       Subcategory @relation(fields: [season_id], references: [subcategory_id])
-//   Status       Status      @relation(fields: [status_id], references: [status_id])
-
-//   @@map("episodes")
-// }
-
 @Injectable()
 export class EpisodesService {
   constructor(private readonly prisma: PrismaService){}
@@ -45,7 +31,7 @@ export class EpisodesService {
     return currSeasonEpisode + 1;
   }
 
-  async createEpisode(createEpisodeDto: CreateEpisodeDto) {
+  async createEpisode(createEpisodeDto: CreateEpisodeDto){
     const currSeasonNum = (await this.prisma.subcategory.findFirst(
       {
         where: {
@@ -338,17 +324,4 @@ export class EpisodesService {
         season: episode.Season.name
     };
 }
-// model Episode {
-//   name         String      @db.VarChar(200)
-//   length       Int         
-//   airDate      DateTime   
-//   status_id    Int
-//   season_id    Int
-//   episode_code String      @db.VarChar(100)
-//   episode_id   Int         @id @default(autoincrement())
-//   Season       Subcategory @relation(fields: [season_id], references: [subcategory_id])
-//   Status       Status      @relation(fields: [status_id], references: [status_id])
-
-//   @@map("episodes")
-// }
 }

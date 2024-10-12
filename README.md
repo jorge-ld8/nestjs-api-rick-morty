@@ -36,7 +36,7 @@ Configura la string de conexion de acuerdo a tus credenciales
 
 ```
 POSTGRES_USER=postgres
-POSTGRES_PASSWORD=Tr4_oht10q
+POSTGRES_PASSWORD=postgres
 POSTGRES_DB=mydb
 
 DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DB}?schema=public

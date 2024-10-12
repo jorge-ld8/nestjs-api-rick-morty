@@ -60,11 +60,12 @@ async function fetchAllEpisodes(baseUrl: string) : Promise<EpisodeAPI[]>{
 async function seedCharacterEpisodes(episodes: EpisodeAPI[]){
     const minParticipation = 5;
 
+    console.log('Seeding database...');
     //Initial seed with the minimun
     for(let episode of episodes){
         // divide la longitud del episodio / min
         const stepSize = Math.ceil(episodeLength / minParticipation);
-        console.log(`Curr Episode: ${episode.name}`);
+        console.log(`Feeding DB with episode: ${episode.name} ${episode.id}/${episodes.length}`);
 
         for(let character of episode.characters){
             // get current character
@@ -83,7 +84,6 @@ async function seedCharacterEpisodes(episodes: EpisodeAPI[]){
             }
             let char_episodes = await prisma.character_Episode.createManyAndReturn({data: character_episodes});
         }
-        console.log(`Prisma character_episode Current length: ${(await prisma.character_Episode.findMany({})).length}`);
 
         //check to see if each minute has a participation
         for(let startInd = 0; startInd < episodeLength; startInd+=60){

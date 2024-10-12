@@ -4,7 +4,7 @@ import { Character } from '@prisma/client';
 import { UpdateCharacterDto } from './dto/update-character.dto';
 import { CharacterResponse } from '../responses/character_response';
 import { ApiQuery, ApiParam, ApiResponse, ApiBody, ApiTags} from '@nestjs/swagger'
-import { StandardResponseDto } from 'src/responses/standar_response';
+import { StandardResponseDto } from 'src/responses/standard_response';
 import { SpeciesResponse } from './dto/species.dto';
 import { StatusResponse } from './dto/status.dto';
 import { CreateCharacterDto } from './dto/create-character.dto';

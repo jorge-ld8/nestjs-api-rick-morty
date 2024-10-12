@@ -4,7 +4,7 @@ import { EpisodeTime, UpdateCharacterEpisodeDto } from './dto/update-character_e
 import { CharacterEpisodeResponse } from '../responses/character_episode_response';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Character, Character_Episode, Episode } from '@prisma/client';
-import { StandardResponseDto } from 'src/responses/standar_response';
+import { StandardResponseDto } from 'src/responses/standard_response';
 import { DeleteCharacterEpisodeDto} from './dto/delete-character_episode.dto';
 
 @Injectable()

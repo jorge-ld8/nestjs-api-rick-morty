@@ -36,23 +36,6 @@ export class CharacterEpisodeController {
     }
   }
 
-  // @Get()
-  // @ApiQuery({ name: 'page', required: false, description: 'Page number', type: Number})
-  // @ApiQuery({ name: 'type', required: false, description: 'Character Type', type: String})
-  // @ApiQuery({ name: 'species', required: false, description: 'Character Species', type: String, example: "Human"})
-  // async getAllCharacters(
-  //     @Query('page') page: number=1, 
-  //     @Query('type') type?: string,
-  //     @Query('species') species?: string,
-  // ): Promise<StandardResponseDto<CharacterDto>> {
-  //     try{
-  //         return await this.charactersService.getAllCharacters(+page, type, species);
-  //     }
-  //     catch(error){
-  //         throw error;
-  //     }
-  // }
-
   @Get()
   @ApiQuery({ name: 'page', required: false, description: 'Page number', type: Number})
   @ApiQuery({ name: 'characterId', required: false, description: 'Character Id ', type: Number})
@@ -72,14 +55,40 @@ export class CharacterEpisodeController {
     }
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.characterEpisodeService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCharacterEpisodeDto: UpdateCharacterEpisodeDto) {
-    return this.characterEpisodeService.update(+id, updateCharacterEpisodeDto);
+  @Patch()
+  @ApiBody({ 
+    description: 'Update Character Participation Example Data', 
+    type: UpdateCharacterEpisodeDto,
+    examples: {
+        updateCharacterEpisodesExample: {
+            value:{
+              episode_id: 2,
+              character_id: 2,
+              times :[
+                {
+                  start_time: "10:45",
+                  end_time: "10:58"
+                },
+                {
+                  start_time: "12:59",
+                  end_time: "13:25"
+                },
+                {
+                  start_time: "13:50",
+                  end_time: "13:58"
+                },
+              ]
+            }
+        }
+    }
+})
+  update(@Body() updateCharacterEpisodeDto: UpdateCharacterEpisodeDto) : Promise<{count: number}> {
+    try{
+      return this.characterEpisodeService.updateCharacterEpisode(updateCharacterEpisodeDto);
+    }
+    catch(error){
+      throw error;
+    }
   }
 
   @Delete()
@@ -95,7 +104,7 @@ export class CharacterEpisodeController {
         }
     }
 })
-  async deleteCharacterEpisode(@Body() deleteCharacterEpisodeDto: DeleteCharacterEpisodeDto) : Promise<string> {
+  async deleteCharacterEpisode(@Body() deleteCharacterEpisodeDto: DeleteCharacterEpisodeDto) : Promise<{count: number}> {
     try{
       return await this.characterEpisodeService.deleteCharacterEpisode(deleteCharacterEpisodeDto);
     }

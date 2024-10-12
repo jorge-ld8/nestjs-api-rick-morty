@@ -1,6 +1,6 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCharacterEpisodeDto } from './dto/create-character_episode.dto';
-import { UpdateCharacterEpisodeDto } from './dto/update-character_episode.dto';
+import { EpisodeTime, UpdateCharacterEpisodeDto } from './dto/update-character_episode.dto';
 import { CharacterEpisodeResponse } from './responses/character_episode.entity';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Character, Character_Episode, Episode } from '@prisma/client';
@@ -16,11 +16,17 @@ export class CharacterEpisodeService {
     return (+mins)*60 + (+secs);
   }
 
+  private invalidTime(time: EpisodeTime) : boolean{
+    const secsStart = this.getSecsFromTime(time.start_time);
+    const secsEnd = this.getSecsFromTime(time.end_time);
+    return secsStart < 0 || secsEnd > 3600 || secsEnd < secsStart;
+  }
+
   async createCharacterEpisode(data: CreateCharacterEpisodeDto) : Promise<CharacterEpisodeResponse>{
     const secsStart = this.getSecsFromTime(data.start_time);
     const secsEnd = this.getSecsFromTime(data.end_time);
 
-    if (secsStart < 0 || secsEnd > 3600 || secsEnd < secsStart)
+    if (this.invalidTime({start_time: data.start_time, end_time: data.end_time}))
       throw new BadRequestException('Time values are not valid.');
 
     const foundRepeated = await this.prisma.character_Episode.findFirst({
@@ -167,22 +173,109 @@ export class CharacterEpisodeService {
     return `This action returns a #${id} characterEpisode`;
   }
 
-  update(id: number, updateCharacterEpisodeDto: UpdateCharacterEpisodeDto) {
-    return `This action updates a #${id} characterEpisode`;
+  // Se puede actualizar el tiempo de participación de un personaje
+  // , siempre y cuando no se solape con otra participación del mismo personaje en el episodio
+
+
+  private async checkCharacterEpisodeParticipation(createCharacterEpisode: CreateCharacterEpisodeDto) : Promise<number>{
+      const characterEpisode = await this.prisma.character_Episode.findFirst({
+        where: {
+          character_id: createCharacterEpisode.character_id,
+          episode_id: createCharacterEpisode.episode_id,
+          OR:[
+             {
+              start_time: {
+                 gte: this.getSecsFromTime(createCharacterEpisode.start_time),
+                 lte: this.getSecsFromTime(createCharacterEpisode.end_time),
+               }
+            },
+            {
+              end_time: {
+                lte: this.getSecsFromTime(createCharacterEpisode.end_time),
+                gte: this.getSecsFromTime(createCharacterEpisode.start_time),
+              }
+            }
+          ]
+        }
+      })
+
+      return characterEpisode ? characterEpisode.character_episode_id : undefined;
   }
 
-  async deleteCharacterEpisode(data: DeleteCharacterEpisodeDto) : Promise<string>{
+  async updateCharacterEpisode(updateCharacterEpisodeDto: UpdateCharacterEpisodeDto) : Promise<{count: number}> {
+    const characterEpisode = await this.prisma.character_Episode.findFirst({
+      where:{
+        episode_id: updateCharacterEpisodeDto.episode_id,
+        character_id: updateCharacterEpisodeDto.character_id
+      },
+      include:{
+        Episode: true
+      }
+    });
+
+    if (!characterEpisode)
+      throw new NotFoundException('Character has no current participation on episode');
+
+    let count = 0;
+
+    for (let epTime of updateCharacterEpisodeDto.times){
+      try{
+        let secsStart = this.getSecsFromTime(epTime.start_time);
+        let secsEnd = this.getSecsFromTime(epTime.end_time);
+
+        if (this.invalidTime(epTime))
+          throw new BadRequestException('There are one or more no valid times.');
+
+        if (secsEnd > characterEpisode.Episode.length)
+          throw new BadRequestException('There is a time greater than episode length')
+
+        const character_episode_id = await this.checkCharacterEpisodeParticipation({
+                                          character_id: updateCharacterEpisodeDto.character_id,
+                                          episode_id: updateCharacterEpisodeDto.episode_id,
+                                          start_time: epTime.start_time,
+                                          end_time: epTime.end_time
+                                        });
+
+        await this.prisma.character_Episode.upsert({
+          where: {
+            character_episode_id: character_episode_id ?? 0,
+            episode_id: updateCharacterEpisodeDto.episode_id,
+            character_id: updateCharacterEpisodeDto.character_id
+          },
+          update:{
+            start_time: secsStart,
+            end_time: secsEnd,
+          },
+          create:{
+            character_id: updateCharacterEpisodeDto.character_id,
+            episode_id: updateCharacterEpisodeDto.episode_id,
+            start_time: secsStart,
+            end_time: secsEnd,
+          }
+        });
+
+        count++;
+      }
+    catch(error){
+      if (error instanceof HttpException){
+        console.log(error.message)
+      }
+      else{
+        console.log(error);
+      }
+    }
+    };
+    return {count: count}
+  }
+
+  async deleteCharacterEpisode(data: DeleteCharacterEpisodeDto) : Promise<{count: number}>{
     const deleted = await this.prisma.character_Episode.deleteMany({
       where:{
         character_id: data.character_id,
         episode_id: data.episode_id
       }
     });
-
-    if (deleted.count==0)
-      return 'No records deleted';
-
-    return 'Delete performed succesfully';
+    return deleted;
   }
 
   private CharacterEpisodeToResponse(data: Character_Episode & {Character: Character, Episode: Episode}) : CharacterEpisodeResponse {

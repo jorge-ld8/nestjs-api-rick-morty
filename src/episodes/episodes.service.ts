@@ -75,14 +75,6 @@ export class EpisodesService {
 
     const currentDate = new Date(createEpisodeDto.airDate);
     currentDate.setHours(currentDate.getHours() + 6);
-    // model Episode {
-    //   name                 String      @db.VarChar(200)
-    //   length               Int         
-    //   airDate              DateTime   
-    //   status_id            Int
-    //   season_id            Int
-    //   episode_code         String      @db.VarChar(100)
-    //   episode_id           Int         @id @default(autoincrement())
     const episode = await this.prisma.episode.create({
       data: {name: createEpisodeDto.name,
             length: createEpisodeDto.length,

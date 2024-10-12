@@ -173,10 +173,6 @@ export class CharacterEpisodeService {
     return `This action returns a #${id} characterEpisode`;
   }
 
-  // Se puede actualizar el tiempo de participación de un personaje
-  // , siempre y cuando no se solape con otra participación del mismo personaje en el episodio
-
-
   private async checkCharacterEpisodeParticipation(createCharacterEpisode: CreateCharacterEpisodeDto) : Promise<number>{
       const characterEpisode = await this.prisma.character_Episode.findFirst({
         where: {
@@ -288,15 +284,3 @@ export class CharacterEpisodeService {
     };
 }
 }
-
-// export class CharacterEpisodeResponse{
-//   character_episode_id: number;
-
-//   character: string;
-  
-//   episode: string;
-  
-//   start_time: string;
-  
-//   end_time: string;
-// }

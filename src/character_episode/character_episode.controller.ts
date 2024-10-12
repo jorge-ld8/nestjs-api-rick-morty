@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe } from '@nestjs/common';
 import { CharacterEpisodeService } from './character_episode.service';
 import { CreateCharacterEpisodeDto } from './dto/create-character_episode.dto';
 import { UpdateCharacterEpisodeDto } from './dto/update-character_episode.dto';
@@ -36,13 +36,36 @@ export class CharacterEpisodeController {
     }
   }
 
+  // @Get()
+  // @ApiQuery({ name: 'page', required: false, description: 'Page number', type: Number})
+  // @ApiQuery({ name: 'type', required: false, description: 'Character Type', type: String})
+  // @ApiQuery({ name: 'species', required: false, description: 'Character Species', type: String, example: "Human"})
+  // async getAllCharacters(
+  //     @Query('page') page: number=1, 
+  //     @Query('type') type?: string,
+  //     @Query('species') species?: string,
+  // ): Promise<StandardResponseDto<CharacterDto>> {
+  //     try{
+  //         return await this.charactersService.getAllCharacters(+page, type, species);
+  //     }
+  //     catch(error){
+  //         throw error;
+  //     }
+  // }
+
   @Get()
   @ApiQuery({ name: 'page', required: false, description: 'Page number', type: Number})
-  async getAllEpisodes(
-    @Query('page') page: number=1
+  @ApiQuery({ name: 'characterId', required: false, description: 'Character Id ', type: Number})
+  @ApiQuery({ name: 'episodeId', required: false, description: 'Episode Id', type: Number})
+  @ApiQuery({ name: 'seasonNum', required: false, description: 'Season #', type: Number})
+  async getAllCharacterEpisodes(
+    @Query('page') page: number=1,
+    @Query('characterId') characterId?: number,
+    @Query('episodeId') episodeId?: number,
+    @Query('seasonNum') seasonNum?: number
   ): Promise<StandardResponseDto<CharacterEpisodeResponse>> {
     try{
-      return await this.characterEpisodeService.getAllCharacterEpisodes(+page);
+      return await this.characterEpisodeService.getAllCharacterEpisodes(+page, +characterId, +episodeId, +seasonNum);
     }
     catch(error){
       throw error;

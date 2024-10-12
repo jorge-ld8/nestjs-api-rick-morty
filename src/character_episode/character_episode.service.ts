@@ -83,9 +83,24 @@ export class CharacterEpisodeService {
     return this.CharacterEpisodeToResponse(createdCharEpisode);
   }
 
-  async getAllCharacterEpisodes(page:number) : Promise<StandardResponseDto<CharacterEpisodeResponse>>{
+  async getAllCharacterEpisodes(page:number, 
+                               characterId?:number, 
+                               episodeId?:number,
+                               seasonNum?:number) : Promise<StandardResponseDto<CharacterEpisodeResponse>>{
     const pageSize = 5;
-    const allCharacterEpisodes = (await this.prisma.character_Episode.findMany({orderBy: {character_episode_id: 'asc'}}));
+    const allCharacterEpisodes = (await this.prisma.character_Episode.findMany({
+      where:{
+        ...(characterId ? { character_id: characterId } : {}),
+        ...(episodeId ? { episode_id: episodeId } : {}),
+        Episode:{
+          Season:{
+            name: {
+              endsWith: seasonNum ? (seasonNum + "").padStart(2, '0') : undefined
+            }
+          }
+        }
+      },
+      orderBy: {character_episode_id: 'asc'}}));
 
     if (allCharacterEpisodes.length==0){
         return {
@@ -109,6 +124,17 @@ export class CharacterEpisodeService {
 
     for (let currPage = 1; currPage <= totalPages; currPage++){
         let character_episodes = await this.prisma.character_Episode.findMany({
+                where:{
+                  ...(characterId ? { character_id: characterId } : {}),
+                  ...(episodeId ? { episode_id: episodeId } : {}),
+                  Episode:{
+                    Season:{
+                      name: {
+                        endsWith: seasonNum ? (seasonNum + "").padStart(2, '0') : undefined
+                      }
+                    }
+                  }
+                },
                 include:{
                     Episode: true,
                     Character: true
@@ -123,12 +149,13 @@ export class CharacterEpisodeService {
             }
         );
         if (currPage === page){
+            let urlGen = (page: number) => (`/character_episodes?page=${page-1}${characterId ? "&character_id="+characterId:""}${episodeId ? "&episode_id="+episodeId:""}${seasonNum ? "&seasonNum="+seasonNum:""}`);
             return {
                 info: {
                     count: totalCount,
                     pages: totalPages,
-                    prev: page > 1 ? `/character_episodes?page=${page-1}` : null,
-                    next: page < totalPages ? `/character_episodes?page=${page+1}` : null,
+                    prev: page > 1 ? urlGen(page-1) : null,
+                    next: page < totalPages ? urlGen(page+1) : null,
                 },
                 results: character_episodes.map((character_episode)=>this.CharacterEpisodeToResponse(character_episode))
             }

@@ -56,8 +56,8 @@ model Character_Episode {
   character_episode_id Int    @id @default(autoincrement())
   character_id         Int
   episode_id           Int
-  start_time           String
-  end_time             String
+  start_time           Int
+  end_time             Int
   Character            Character @relation(fields: [character_id], references: [character_id])
   Episode              Episode   @relation(fields: [episode_id], references: [episode_id])
   @@map("characters_episodes")

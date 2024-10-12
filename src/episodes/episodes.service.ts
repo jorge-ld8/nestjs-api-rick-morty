@@ -4,6 +4,7 @@ import { UpdateEpisodeDto } from './dto/update-episode.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Episode, Status, Subcategory } from '@prisma/client';
 import { EpisodeDto } from './dto/episode.dto';
+import { StandardResponseDto } from 'src/utils/response-dto';
 
 @Injectable()
 export class EpisodesService {
@@ -31,7 +32,7 @@ export class EpisodesService {
     return currSeasonEpisode + 1;
   }
 
-  async createEpisode(createEpisodeDto: CreateEpisodeDto){
+  async createEpisode(createEpisodeDto: CreateEpisodeDto) : Promise<EpisodeDto>{
     const currSeasonNum = (await this.prisma.subcategory.findFirst(
       {
         where: {
@@ -86,7 +87,7 @@ export class EpisodesService {
     return this.EpisodeToDto(episode);
   }
 
-  async getAllEpisodes(page:number=1){
+  async getAllEpisodes(page:number=1) : Promise<StandardResponseDto<EpisodeDto>>{
     const pageSize = 5;
     const allEpisodes = await this.prisma.episode.findMany({
       where: {

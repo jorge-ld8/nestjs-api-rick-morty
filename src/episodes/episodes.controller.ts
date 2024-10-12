@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe 
 import { EpisodesService } from './episodes.service';
 import { CreateEpisodeDto } from './dto/create-episode.dto';
 import { UpdateEpisodeDto } from './dto/update-episode.dto';
-import { StandardResponseDto } from 'src/responses/standar_response';
+import { StandardResponseDto } from 'src/responses/standard_response';
 import { EpisodeResponse } from '../responses/episode_response';
 import { ApiBody, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { UpdateCharacterDto } from 'src/characters/dto/update-character.dto';

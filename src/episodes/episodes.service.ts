@@ -4,7 +4,7 @@ import { UpdateEpisodeDto } from './dto/update-episode.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Episode, Status, Subcategory } from '@prisma/client';
 import { EpisodeResponse } from '../responses/episode_response';
-import { StandardResponseDto } from 'src/responses/standar_response';
+import { StandardResponseDto } from 'src/responses/standard_response';
 
 @Injectable()
 export class EpisodesService {

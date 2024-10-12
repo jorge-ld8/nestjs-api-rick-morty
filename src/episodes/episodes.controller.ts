@@ -4,7 +4,8 @@ import { CreateEpisodeDto } from './dto/create-episode.dto';
 import { UpdateEpisodeDto } from './dto/update-episode.dto';
 import { StandardResponseDto } from 'src/utils/response-dto';
 import { EpisodeDto } from './dto/episode.dto';
-import { ApiBody, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { UpdateCharacterDto } from 'src/characters/dto/update-character.dto';
 
 // export class CreateEpisodeDto {
 //   @IsNotEmpty()
@@ -72,8 +73,19 @@ export class EpisodesController {
     }
   }
 
+  @Get(':id')
+  async getEpisodeById(@Param('id', ParseIntPipe) id: number): Promise<EpisodeDto> {
+    try{
+      return await this.episodesService.getEpisodeById(id);
+    }
+    catch(error){
+      throw error;
+    }
+  }  
+
+
   @Delete(':id')
-  async cancelEpisode(@Param('id', ParseIntPipe) id: number) {
+  async cancelEpisode(@Param('id', ParseIntPipe) id: number): Promise<string> {
     try{
       return await this.episodesService.cancelEpisode(+id);
     }
@@ -82,15 +94,27 @@ export class EpisodesController {
     }
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.episodesService.findOne(+id);
-  }
-
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateEpisodeDto: UpdateEpisodeDto) {
-    return this.episodesService.update(+id, updateEpisodeDto);
+  @ApiParam({ name: 'id', required: true, description: 'Unique identifier of the character', type: Number})
+  @ApiBody({
+      description: 'Update character data',
+      type: UpdateCharacterDto,
+      examples: {
+          updateCharacterExample: {
+              value: {
+                  name: 'The Adventures of the wild',
+                  length: 55,
+                  airDate: '2022-01-01',
+                  season_id: 12
+              },
+          },
+      },
+  })
+  async updateEpisode(
+    @Param('id', ParseIntPipe) id: number, 
+    @Body() updateEpisodeDto: UpdateEpisodeDto
+  ): Promise<EpisodeDto>{
+    console.log('hola');
+    return this.episodesService.updateEpisode(+id, updateEpisodeDto);
   }
-
-
 }

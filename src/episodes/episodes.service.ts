@@ -213,8 +213,84 @@ export class EpisodesService {
     return `This action returns a #${id} episode`;
   }
 
-  update(id: number, updateEpisodeDto: UpdateEpisodeDto) {
-    return `This action updates a #${id} episode`;
+  async updateEpisode(id: number, episode: UpdateEpisodeDto) : Promise<EpisodeDto> {
+    if (episode.season_id){
+        const season = await this.prisma.subcategory.findUnique({
+            where:{
+                    subcategory_id: episode.season_id,
+                    category: {
+                        name: "Season"
+                    }
+            }
+        });
+
+        if (!season) throw new BadRequestException('Species not found');
+    }
+
+    const episodeRepeated = await this.prisma.episode.findFirst(
+                {
+                    where: {
+                      name: episode.name,
+                      Season: {
+                        subcategory_id: episode.season_id,
+                      },
+                      Status:{
+                        value: {
+                          not: {
+                            equals: 'Cancelled'
+                          }
+                        }
+                      }
+                    },
+                    include:{
+                      Season: true,
+                      Status: true
+                    }
+                });
+
+    if (episodeRepeated) throw new BadRequestException('There is already an episode with the same name in the same season');
+    
+    const currentDate = new Date(episode.airDate);
+    currentDate.setHours(currentDate.getHours() + 6);
+
+    let updated = await this.prisma.episode.update({
+        where: {
+            episode_id: id,
+            Status:{
+              value: {
+                not: {
+                  equals: 'Cancelled'
+                }
+              }
+            }
+        },
+        data: {...episode, airDate:currentDate},
+        include: {
+            Status: true,
+            Season: true
+        }
+    })
+
+    if (!updated) throw new  BadRequestException(`Episode with id: ${id} not found hence it couldn't be updated`);
+
+    return this.EpisodeToDto(updated);
+  }
+
+
+  async getEpisodeById(id: number) : Promise<EpisodeDto>{
+    const episode = await this.prisma.episode.findUnique({
+      where: {
+          episode_id : id
+      },
+      include: {
+          Status: true,
+          Season: true
+      }
+    });
+    
+    if (!episode) throw new NotFoundException('Episode not found.')
+
+    return this.EpisodeToDto(episode);
   }
 
   async cancelEpisode(id: number) : Promise<string>{

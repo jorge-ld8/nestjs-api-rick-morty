@@ -49,6 +49,7 @@ model Character {
   Specie               Subcategory @relation(fields: [specie_id], references: [subcategory_id])
   Status               Status      @relation(fields: [status_id], references: [status_id])
   Character_Episodes   Character_Episode[]
+
   @@map("characters")
 }
 
@@ -60,6 +61,7 @@ model Character_Episode {
   end_time             Int
   Character            Character @relation(fields: [character_id], references: [character_id])
   Episode              Episode   @relation(fields: [episode_id], references: [episode_id])
+
   @@map("characters_episodes")
 }
 

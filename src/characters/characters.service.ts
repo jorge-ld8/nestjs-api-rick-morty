@@ -6,6 +6,7 @@ import { CharacterDto } from './dto/character.dto';
 import { SpeciesDTO } from './dto/species.dto';
 import { StatusDTO } from './dto/status.dto';
 import { CreateCharacterDto } from './dto/create-character.dto';
+import { StandardResponseDto } from 'src/utils/response-dto';
 
 @Injectable()
 export class CharactersService {
@@ -42,15 +43,7 @@ export class CharactersService {
         return this.CharacterToDto(character);
     }
 
-    async getAllCharacters(page:number, type?: string, species?: string) : Promise<{
-        info: {
-            count: number,
-            pages: number,
-            next: string | null,
-            prev: string | null,
-        },
-        results: CharacterDto[]
-    }>{
+    async getAllCharacters(page:number, type?: string, species?: string) : Promise<StandardResponseDto<CharacterDto>>{
         const pageSize = 5;
         const allCharacters = (await this.prisma.character.findMany({
             where: {

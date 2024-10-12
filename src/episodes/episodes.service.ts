@@ -318,7 +318,7 @@ export class EpisodesService {
     return {
         id: episode.episode_id,
         name: episode.name,
-        length: episode.length,
+        length: `${(Math.floor(episode.length / 60)+"").padStart(2, '0')}:${((episode.length % 60)+"").padStart(2, '0')}`,
         airDate: episode.airDate.toDateString(),
         episode_code: episode.episode_code,
         status: episode.Status.value,

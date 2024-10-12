@@ -3,7 +3,7 @@ export class EpisodeResponse {
 
     name: string;
     
-    length: number;
+    length: string;
     
     airDate: string;
     

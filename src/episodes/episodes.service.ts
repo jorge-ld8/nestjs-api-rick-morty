@@ -320,9 +320,8 @@ export class EpisodesService {
           }
       })
 
-      if (!episode){
-          throw new NotFoundException(`Episode not found.`);
-      }
+      if (!episode)
+          return `Episode not found.`;
 
       return 'Episode has been succesfully cancelled';
     } 

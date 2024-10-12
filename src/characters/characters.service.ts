@@ -242,7 +242,8 @@ export class CharactersService {
                 }
             })
 
-            if (!character) throw new NotFoundException(`Character not found.`);
+            if (!character) 
+                return `Character not found.`;
 
             return 'Character has been succesfully suspended';
         }

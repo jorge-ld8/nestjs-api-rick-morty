@@ -15,8 +15,8 @@ Antes de empezar, asegurate de tener lo siguiente instalado:
 Clona el repositorio
 
 ```
-git clone https://github.com/jorge-ld8/nestjs-api-rick-morty
-cd your-repo
+git clone https://github.com/jorge-ld8/nestjs-api-rick-morty nestjs-api-rick-morty
+cd nestjs-api-rick-morty
 ```
 
 Instala las  Dependencias
